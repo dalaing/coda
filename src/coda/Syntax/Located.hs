@@ -8,6 +8,7 @@ module Syntax.Located
 
 import Control.Comonad
 import Data.List (uncons)
+import Text.Megaparsec (PosState(..))
 import Text.Megaparsec.Stream
 import Text.Megaparsec.Pos
 
@@ -27,12 +28,17 @@ instance Ord a => Stream [Located a] where -- Ord? really?
   chunkToTokens _ = id
   chunkLength _ = length
   chunkEmpty _ = null
-  positionAt1 _ _ (Located p _ _) = p
-  positionAtN _ s [] = s
-  positionAtN _ _ (Located p _ _:_) = p
-  advance1 _ _ _ (Located _ _ q) = q
-  advanceN _ _ s [] = s
-  advanceN _ _ _ xs = case last xs of Located _ _ q -> q
+
+  -- positionAt1 _ _ (Located p _ _) = p
+  -- positionAtN _ s [] = s
+  -- positionAtN _ _ (Located p _ _:_) = p
+  -- advance1 _ _ _ (Located _ _ q) = q
+  -- advanceN _ _ s [] = s
+  -- advanceN _ _ _ xs = case last xs of Located _ _ q -> q
+
+  reachOffset o ps = (_, _, _)
+  reachOffsetNoLine o ps = (_, _)
+
   take1_ = uncons
   takeN_ n s
     | n <= 0 = Just ([],s)
