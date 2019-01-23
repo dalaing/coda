@@ -111,12 +111,14 @@ instance Semigroup Layout where
   E d <> V d' l m r = V (d <> d') (rel d l) (rel d m) (rel d r)
   S d (Run p ds ts es pr) <> E d' = S (d <> d') $ Run p ds ts es pr
   S d lr@(Run p ds ts es pr) <> S d' rr@(Run p' ds' ts' es' pr') = case joinAndCompare pr p' of
-    Left p'' -> S (d <> d') $ Run p'' (ds <> rel d ds') (ts <> rel d ts') (snocCat es (LayoutMismatch d pr p') <> rel d es') pr' -- no common prefix
-    Right LT -- indent
-      | boring ts -> S (d <> d') $ Run p (ds <> rel d ds') (ts <> rel d ts') (es <> rel d es') pr'
-      | otherwise -> V (d <> d') Empty lr $ Rev $ Cat.singleton (rel d rr)
-    Right EQ -> S (d <> d') $ Run p (ds <> rel d ds') (ts <> rel d ts') (es <> rel d es') pr'
-    Right GT -> V (d <> d') (Cat.singleton lr) (rel d rr) Empty
+    Left p'' -> S (d <> d') $ Run p (ds <> rel d ds') (ts <> rel d ts') (snocCat es (LayoutMismatch d pr p') <> rel d es') pr' -- no common prefix
+    Right _ -> case joinAndCompare p p' of
+      Left _ -> S (d <> d') $ Run p (ds <> rel d ds') (ts <> rel d ts') (snocCat es (LayoutMismatch d pr p') <> rel d es') pr' -- no common prefix
+      Right LT -- indent
+        | boring ts -> S (d <> d') $ Run p (ds <> rel d ds') (ts <> rel d ts') (es <> rel d es') pr'
+        | otherwise -> V (d <> d') Empty lr $ Rev $ Cat.singleton (rel d rr)
+      Right EQ -> S (d <> d') $ Run p (ds <> rel d ds') (ts <> rel d ts') (es <> rel d es') pr'
+      Right GT -> V (d <> d') (Cat.singleton lr) (rel d rr) Empty
 
   --S d lr@(Run p ds ts es) <> V d' l m r = case joinAndCompare p (prefix m) of
   --   Left p'' | has _Empty r -> undefined -- S $ Run (d <> d') p''

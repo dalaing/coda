@@ -13,6 +13,7 @@ import Data.Char (isSpace)
 import Data.Foldable
 import Data.Text (Text)
 import qualified Data.Text as Text
+import qualified Data.Text.Unsafe as Text
 
 import Test.Tasty
 import Test.Tasty.HUnit
@@ -34,7 +35,7 @@ ptxt :: Int -> Text -> Layout
 ptxt n = dyckLayout 0 (Prefix . Text.pack . replicate n $ ' ') . Lex.lex
 
 txt :: Text -> Layout
-txt = dyckLayout 0 (Prefix "") . Lex.lex
+txt t = let dt = Delta . Text.lengthWord16 $ t in dyckLayout dt (fromText t) (Lex.lex t)
 
 -- 23 overall
 -- 4 / 13 / 25
@@ -80,13 +81,22 @@ exampleE =
   \  \tbaz\n\
   \"
 
+exampleF1 :: Text
+exampleF1 =
+  "foo\n\
+  \  bar\n\
+  \baz\n\
+  \"
+
 linesToLayouts :: Delta -> [Text] -> (Delta, [Layout])
 linesToLayouts d0 ls =
   let
     f (d, ls) t =
-      ( d <> fromIntegral (Text.length t)
-      , ls <> pure (dyckLayout d (Prefix . Text.takeWhile isSpace $ t) (rel d (Lex.lex t)))
-      )
+      let dt = Delta . Text.lengthWord16 $ t
+      in
+        ( d <> dt
+        , ls <> pure (dyckLayout dt (fromText t) (Lex.lex t))
+        )
   in
     foldl' f (d0, mempty) ls
 
@@ -97,7 +107,10 @@ textToLayoutPerLine =
 textToLayouts :: Text -> [Layout]
 textToLayouts t =
   let
-    ts = Text.lines t
+    ts' = Text.lines t
+    ts = case ts' of
+      [] -> []
+      _ -> fmap (<> "\n") (init ts') ++ [last ts']
     f :: Int -> Layout
     f i = (\(x, y) -> g x y) $ splitAt i ts
     g :: [Text] -> [Text] -> Layout
@@ -108,7 +121,7 @@ textToLayouts t =
       in
         fold ls1 <> fold ls2
   in
-    fmap f [1..length ts - 1]
+    fmap f [0..length ts - 1]
 
 textsToLayout :: Text -> Text -> Layout
 textsToLayout t1 t2 =
@@ -277,8 +290,9 @@ test_layout = testGroup "layout"
   -- , testCase "A2" $ True @=? (allEq . textToLayouts) exampleA
   -- , testCase "B1" $ [] @=? textToLayouts exampleB
   -- , testCase "B2" $ True @=? (allEq . textToLayouts) exampleB
-  -- , testCase "C1" $ [] @=? textToLayouts exampleC
-  -- , testCase "C2" $ True @=? (allEq . textToLayouts) exampleC
+  -- , testCase "C" $ True @=? (allEq . textToLayouts) exampleC
   -- , testCase "D1" $ [] @=? textToLayouts exampleD
   -- , testCase "D2" $ True @=? (allEq . textToLayouts) exampleD
+  , testCase "F1e" $ [] @=? textToLayouts exampleF1
+  , testCase "F1" $ True @=? (allEq . textToLayouts) exampleF1
   ]
