@@ -37,43 +37,6 @@ ptxt n = dyckLayout 0 (Prefix . Text.pack . replicate n $ ' ') . Lex.lex
 txt :: Text -> Layout
 txt t = let dt = Delta . Text.lengthWord16 $ t in dyckLayout dt (fromText t) (Lex.lex t)
 
--- 23 overall
--- 4 / 13 / 25
-
-exampleA :: Text
-exampleA =
-  "do\n\
-  \  foo\n\
-  \    bar\n\
-  \  baz"
-
-exampleB :: Text
-exampleB =
-  "do\n\
-  \  do\n\
-  \    foo\n\
-  \  foo \n\
-  \"
-
-exampleC :: Text
-exampleC =
-  "do\n\
-  \  one\n\
-  \  two\n\
-  \"
-
-exampleD :: Text
-exampleD =
-  "do\n\
-  \  do\n\
-  \    one\n\
-  \      two\n\
-  \    three\n\
-  \      four\n\
-  \  five\n\
-  \    six\n\
-  \"
-
 exampleE :: Text
 exampleE =
   "foo\n\
@@ -83,9 +46,24 @@ exampleE =
 
 exampleF1 :: Text
 exampleF1 =
+  "do\n\
+  \  foo\n\
+  \    bar\n\
+  \"
+
+exampleF2 :: Text
+exampleF2 =
   "foo\n\
   \  bar\n\
   \baz\n\
+  \"
+
+exampleF3 :: Text
+exampleF3 =
+  "do\n\
+  \  foo\n\
+  \    bar\n\
+  \  two\n\
   \"
 
 linesToLayouts :: Delta -> [Text] -> (Delta, [Layout])
@@ -99,10 +77,6 @@ linesToLayouts d0 ls =
         )
   in
     foldl' f (d0, mempty) ls
-
-textToLayoutPerLine :: Text -> [Layout]
-textToLayoutPerLine =
-  snd . linesToLayouts 0 . Text.lines
 
 textToLayouts :: Text -> [Layout]
 textToLayouts t =
@@ -123,18 +97,9 @@ textToLayouts t =
   in
     fmap f [0..length ts - 1]
 
-textsToLayout :: Text -> Text -> Layout
-textsToLayout t1 t2 =
-  let
-    (d, ls1) = linesToLayouts 0 (Text.lines t1)
-    (_, ls2) = linesToLayouts d (Text.lines t2)
-  in
-    foldl (<>) mempty ls1 <> foldl (<>) mempty ls2
-
 allEq :: Eq a => [a] -> Bool
 allEq xs =
   and $ zipWith (==) xs (tail xs)
-
 
 -- The property to target is
 --   allEq . textToLayouts $ txt
@@ -284,15 +249,9 @@ test_layout = testGroup "layout"
   [
     testProperty "all eq" $ allEq . textToLayouts . modelToText
   , testProperty "all eq nde" $ allEq . textToLayouts . modelNoDoErrorsToText
-  , testCase "E1" $ [] @=? textToLayouts exampleE
-  , testCase "E2" $ True @=? (allEq . textToLayouts) exampleE
-  -- , testCase "A1" $ [] @=? textToLayouts exampleA
-  -- , testCase "A2" $ True @=? (allEq . textToLayouts) exampleA
-  -- , testCase "B1" $ [] @=? textToLayouts exampleB
-  -- , testCase "B2" $ True @=? (allEq . textToLayouts) exampleB
-  -- , testCase "C" $ True @=? (allEq . textToLayouts) exampleC
-  -- , testCase "D1" $ [] @=? textToLayouts exampleD
-  -- , testCase "D2" $ True @=? (allEq . textToLayouts) exampleD
-  , testCase "F1e" $ [] @=? textToLayouts exampleF1
+  , testCase "E1" $ True @=? (allEq . textToLayouts) exampleE
   , testCase "F1" $ True @=? (allEq . textToLayouts) exampleF1
+  , testCase "F2" $ True @=? (allEq . textToLayouts) exampleF2
+  , testCase "F3e" $ [] @=? textToLayouts exampleF3
+  , testCase "F3" $ True @=? (allEq . textToLayouts) exampleF3
   ]
