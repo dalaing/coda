@@ -68,7 +68,7 @@ data Layout
   -- I have changed this so that the middle bit tracks Cat or Runs with the same indent.
   -- This is looking like it might be problematic in some cases (at least from a performance perspective),
   -- since I occasionally need to inspect either end of this Cat.
-  | V {-# unpack #-} !Delta !(Cat Run) !(Cat Run) !(Rev Cat Run)
+  | V {-# unpack #-} !Delta !(Cat Run) {-# unpack #-} !Run !(Rev Cat Run)
   deriving (Eq, Show) -- this is for debugging the Layout Monoid
 
 instance HasDelta Layout where
@@ -104,204 +104,185 @@ instance Semigroup Layout where
         Left _ -> S (d <> d') $ Run p (ds <> rel d ds') (ts <> rel d ts') (snocCat es (LayoutMismatch d pr p') <> rel d es') pr' -- no common prefix
         Right LT -- indent
           | boring ts -> S (d <> d') $ Run p (ds <> rel d ds') (ts <> rel d ts') (es <> rel d es') pr'
-          | otherwise -> V (d <> d') Empty (Cat.singleton lr) $ Rev $ Cat.singleton (rel d rr)
-        Right EQ -> V (d <> d') Empty (Cat.singleton lr <> Cat.singleton (rel d rr)) Empty
-        Right GT -> V (d <> d') (Cat.singleton lr) (Cat.singleton $ rel d rr) Empty
+          | otherwise -> V (d <> d') Empty lr $ Rev $ Cat.singleton (rel d rr)
+        -- we bias towards the right hand side when indents are equal
+        Right EQ -> V (d <> d') Empty lr (Rev . Cat.singleton . rel d $ rr)
+        Right GT -> V (d <> d') (Cat.singleton lr) (rel d rr) Empty
 
   -- a
   -- fg h ji/Rij
-  S d lr@(Run p ds ts es pr) <> V d' l m r =
-    case preview _Cons m of
-      Just (mh@(Run p' ds' ts' es' pr'), ht) ->
-        case joinAndCompare pr (prefix mh) of
-          Left _ -> error "boom 2"
-          Right _ -> case joinAndCompare p (prefix mh) of
-            Left _ -> error "boom 2a"
-              -- a                -- a and fg might combine if ts is boring
-              --     fg
-              --   h
-              --     ji/Rij
-            Right LT -> case preview _Cons l of
-              Nothing -> case preview _Snoc r of
-                Nothing
-                  | boring ts -> S (d <> d') $ Run p (ds <> rel d ds') (ts <> rel d ts') (es <> rel d es') pr'
-                  | otherwise -> V (d <> d') Empty (Cat.singleton lr) (Rev (revCat (rel d m)) <> rel d r)
-                _ -> V (d <> d') Empty (Cat.singleton lr) (Rev (revCat (rel d m)) <> rel d r)
-              Just (lh@(Run p'' ds'' ts'' es'' pr''), lt)
-                | boring ts -> V (d <> d') Empty (Cat.singleton (Run p (ds <> rel d ds'') (ts <> rel d ts'') (es <> rel d es'') pr'')) (Rev (revCat (rel d (lt <> m))) <> rel d r)
-                | otherwise -> V (d <> d') Empty (Cat.singleton lr) (Rev (revCat (rel d (l <> m))) <> rel d r)
-            -- a             -- this may combine with fg if ts is boring
-            --   fg
-            -- h
-            --   ji/Rij
-            Right EQ -> case preview _Cons l of
-              Nothing -> V (d <> d') Empty (Cat.singleton lr <> rel d m) (rel d r)
-              Just (lh@(Run p' ds' ts' es' pr'), lt)
-                | boring ts -> V (d <> d') Empty (Cat.singleton (Run p (ds <> rel d ds') (ts <> rel d ts') (es <> rel d es') pr') <> rel d lt <> rel d m) (rel d r)
-                | otherwise -> V (d <> d') Empty (Cat.singleton lr <> rel d l <> rel d m) (rel d r)
-            --   a
-            --   fg
-            -- h
-            --   ji/Rij
-            Right GT -> V (d <> d') (Cat.singleton lr <> rel d l) (rel d m) (rel d r)
-      Nothing -> error "should not be empty"
+  S d lr@(Run p ds ts es pr) <> V d' l m@(Run p' ds' ts' es' pr') r =
+      case joinAndCompare pr (prefix m) of
+        Left _ -> error "boom 2"
+        Right _ -> case joinAndCompare p (prefix m) of
+          Left _ -> error "boom 2a"
+            -- a                -- a and fg might combine if ts is boring
+            --     fg
+            --   h
+            --     ji/Rij
+          Right LT -> case preview _Cons l of
+            Nothing -> case preview _Snoc r of
+              Nothing
+                | boring ts -> S (d <> d') $ Run p (ds <> rel d ds') (ts <> rel d ts') (es <> rel d es') pr'
+                | otherwise -> V (d <> d') Empty lr (Rev (Cat.singleton (rel d m)) <> rel d r)
+              _ -> V (d <> d') Empty lr (Rev (Cat.singleton (rel d m)) <> rel d r)
+            Just (lh@(Run p'' ds'' ts'' es'' pr''), lt)
+              | boring ts -> V (d <> d') Empty (Run p (ds <> rel d ds'') (ts <> rel d ts'') (es <> rel d es'') pr'') (Rev (revCat (rel d lt)) <> Rev (Cat.singleton m) <> rel d r)
+              | otherwise -> V (d <> d') Empty lr (Rev (revCat (rel d (l <> Cat.singleton m))) <> rel d r)
+          -- a             -- this may combine with fg if ts is boring
+          --   fg
+          -- h
+          --   ji/Rij
+          Right EQ -> case preview _Cons l of
+            Nothing -> V (d <> d') Empty lr (Rev (Cat.singleton (rel d m)) <> rel d r)
+            Just (lh@(Run p' ds' ts' es' pr'), lt)
+              | boring ts -> V (d <> d') Empty (Run p (ds <> rel d ds') (ts <> rel d ts') (es <> rel d es') pr') (Rev (revCat (rel d lt)) <> Rev (Cat.singleton (rel d m)) <> rel d r)
+              | otherwise -> V (d <> d') Empty lr (Rev (revCat (rel d l)) <> Rev (Cat.singleton (rel d m)) <> rel d r)
+          --   a
+          --   fg
+          -- h
+          --   ji/Rij
+          Right GT -> V (d <> d') (Cat.singleton lr <> rel d l) (rel d m) (rel d r)
 
   V d l m r <> E d' = V (d <> d') l m r
 
   -- -- ab c ed/Rde
   -- -- f
-  V d l m r@(Rev rr) <> S d' rr'@(Run p' ds' ts' es' pr') =
-    case preview _Cons m of
-      Just (mh, ht) ->
-        case joinAndCompare (prefix mh) p' of
-          Left _ -> error "boom 4"
-        -- --   ab
-        --    c
-        --      ed/Rde -- last ed might combine with f
-        -- --   f
-          Right LT -> case preview _Snoc r of
-            Nothing -> case preview _Cons (revCat m) of -- TODO this is really bad, do better than this
-              Just (smh@(Run p ds ts es pr), sht)
-                | boring ts -> V (d <> d') l (revCat $ review _Cons (Run p (ds <> rel d ds') (ts <> rel d ts') (es <> rel d es') pr', sht)) Empty
-                | otherwise -> V (d <> d') l m (Rev . Cat.singleton . rel d $ rr')
-              Nothing -> error "should not be empty"
-            Just (rt, rh@(Run p ds ts es pr))
-              | boring ts -> case joinAndCompare pr p' of
-                  Left _ -> error "boom 4a"
-                  Right _ -> case joinAndCompare p p' of
-                    Left _ -> error "boom 4b"
-                    Right LT -> V (d <> d') l m (review _Snoc (rt, Run p (ds <> rel d ds') (ts <> rel d ts') (es <> rel d es') pr'))
-                    Right EQ -> V (d <> d') l m (r <> Rev (Cat.singleton (rel d rr')))
-                    Right GT -> V (d <> d') l m (r <> Rev (Cat.singleton (rel d rr')))
-              | otherwise -> V (d <> d') l m (r <> Rev (Cat.singleton (rel d rr')))
-        -- --   ab
-        --    c
-        --      ed/Rde
-        -- -- f
-          Right EQ -> V (d <> d') l (m <> revCat rr <> Cat.singleton (rel d rr')) Empty
-        -- --     ab
-        --      c
-        --        ed/Rde
-        -- -- f
-          Right GT -> V (d <> d') (l <> m <> revCat rr) (Cat.singleton (rel d rr')) Empty
-      Nothing -> error "should not be empty"
+  V d l m@(Run p ds ts es pr) r@(Rev rr) <> S d' rr'@(Run p' ds' ts' es' pr') =
+    case joinAndCompare (prefix m) p' of
+      Left _ -> error "boom 4"
+    -- --   ab
+    --    c
+    --      ed/Rde -- last ed might combine with f
+    -- --   f
+      Right LT -> case preview _Snoc r of
+        Nothing
+          | boring ts -> V (d <> d') l m (Rev . Cat.singleton $ (Run p (ds <> rel d ds') (ts <> rel d ts') (es <> rel d es') pr'))
+          | otherwise -> V (d <> d') l m (Rev . Cat.singleton . rel d $ rr')
+        Just (rt, rh@(Run p ds ts es pr))
+          | boring ts -> case joinAndCompare pr p' of
+              Left _ -> error "boom 4a"
+              Right _ -> case joinAndCompare p p' of
+                Left _ -> error "boom 4b"
+                Right LT -> V (d <> d') l m (review _Snoc (rt, Run p (ds <> rel d ds') (ts <> rel d ts') (es <> rel d es') pr'))
+                Right EQ -> V (d <> d') l m (r <> Rev (Cat.singleton (rel d rr')))
+                Right GT -> V (d <> d') l m (r <> Rev (Cat.singleton (rel d rr')))
+          | otherwise -> V (d <> d') l m (r <> Rev (Cat.singleton (rel d rr')))
+    -- --   ab
+    --    c
+    --      ed/Rde
+    -- -- f
+      Right EQ -> V (d <> d') l m (r <> Rev (Cat.singleton (rel d rr')))
+    -- --     ab
+    --      c
+    --        ed/Rde
+    -- -- f
+      Right GT -> V (d <> d') (l <> Cat.singleton m <> revCat rr) (rel d rr') Empty
 
   -- -- ab c
   -- --    h ji/Rij
   V d l m Empty <> V d' Empty m' r' =
-    case (preview _Cons m, preview _Cons m') of
-      (Just (mh, ht), Just (mh', mt')) ->
-        case joinAndCompare (prefix mh) (prefix mh') of
-          Left _ -> error "boom 5"
-      -- --   ab
-      --    c            -- this may combine with h if last c is boring?
-      -- --   h
-      -- --     ji/Rij
-          Right LT -> V (d <> d') l m (Rev (revCat m') <> r')
+    case joinAndCompare (prefix m) (prefix m') of
+      Left _ -> error "boom 5"
+  -- --   ab
+  --    c            -- this may combine with h if last c is boring?
+  -- --   h
+  -- --     ji/Rij
+      Right LT -> V (d <> d') l m (Rev (Cat.singleton m') <> r')
 
-      -- --   ab
-      --    c
-      -- -- h
-      -- --   ji/Rij
-          Right EQ -> V (d <> d') l (m <> rel d m') (rel d r')
+  -- --   ab
+  --    c
+  -- -- h
+  -- --   ji/Rij
+      Right EQ -> V (d <> d') l m (Rev (Cat.singleton (rel d m')) <> rel d r')
 
-      -- --     ab
-      --      c
-      -- -- h
-      -- --   ji/Rij
-          Right GT -> V (d <> d') (l <> m) (rel d m') (rel d r')
-      _ -> error "should not be empty"
+  -- --     ab
+  --      c
+  -- -- h
+  -- --   ji/Rij
+      Right GT -> V (d <> d') (l <> Cat.singleton m) (rel d m') (rel d r')
 
   -- -- ab c
   -- -- fg h ji/Rij
   V d l m Empty <> V d' l' m' r' =
-    case (preview _Cons m, preview _Cons m') of
-      (Just (mh, ht), Just (mh', mt')) ->
-        case joinAndCompare (prefix mh) (prefix mh') of
-          Left _ -> error "boom 6"
-      -- --   ab
-      --    c            -- this may combine with fg if last c is boring?
-      -- --     fg
-      --      h
-      --        ji/Rij
-          Right LT -> V (d <> d') l m (Rev (revCat (rel d (l' <> m'))) <> rel d r')
+    case joinAndCompare (prefix m) (prefix m') of
+      Left _ -> error "boom 6"
+  -- --   ab
+  --    c            -- this may combine with fg if last c is boring?
+  -- --     fg
+  --      h
+  --        ji/Rij
+      Right LT -> V (d <> d') l m (Rev (revCat (rel d (l' <> Cat.singleton m'))) <> rel d r')
 
 
-      -- --   ab
-      --    c             -- this maybe combine with fg if last c is boring?
-      -- --   fg
-      --    h
-      --      ji/Rij
-          Right EQ -> V (d <> d') l (m <> rel d l' <> rel d m') (rel d r')
+  -- --   ab
+  --    c             -- this maybe combine with fg if last c is boring?
+  -- --   fg
+  --    h
+  --      ji/Rij
+      Right EQ -> V (d <> d') l m (Rev (revCat (rel d l')) <> Rev (Cat.singleton (rel d m')) <> rel d r')
 
-      -- --     ab
-      --      c
-      -- --   fg
-      --    h
-      --      ji/Rij
-          Right GT -> V (d <> d') (l <> m <> rel d l') (rel d m') (rel d r')
-      _ -> error "should not be empty"
+  -- --     ab
+  --      c
+  -- --   fg
+  --    h
+  --      ji/Rij
+      Right GT -> V (d <> d') (l <> Cat.singleton m <> rel d l') (rel d m') (rel d r')
 
   -- -- ab c ed/Rde
   -- --    h ji/Rij
   V d l m r@(Rev rr) <> V d' Empty m' r' =
-    case (preview _Cons m, preview _Cons m') of
-      (Just (mh, ht), Just (mh', mt')) ->
-        case joinAndCompare (prefix mh) (prefix mh') of
-          Left _ -> error "boom 7"
-      -- --   ab
-      --    c
-      --      ed/Rde   -- last ed might combine with h
-      -- --   h
-      --        ji/Rij
-          Right LT -> V (d <> d') l m (r <> Rev (revCat (rel d m')) <> rel d r')
+    case joinAndCompare (prefix m) (prefix m') of
+      Left _ -> error "boom 7"
+  -- --   ab
+  --    c
+  --      ed/Rde   -- last ed might combine with h
+  -- --   h
+  --        ji/Rij
+      Right LT -> V (d <> d') l m (r <> Rev (revCat (Cat.singleton (rel d m'))) <> rel d r')
 
-      -- --   ab
-      --    c
-      --      ed/Rde
-      -- -- h
-      --      ji/Rij
-          Right EQ -> V (d <> d') l (m <> revCat rr <> rel d m') (rel d r')
+  -- --   ab
+  --    c
+  --      ed/Rde
+  -- -- h
+  --      ji/Rij
+      Right EQ -> V (d <> d') l m (r <> Rev (Cat.singleton (rel d m')) <> rel d r')
 
-      -- --     ab
-      --      c
-      --        ed/Rde
-      -- -- h
-      --      ji/Rij
-          Right GT -> V (d <> d') (l <> m <> revCat rr) (rel d m') (rel d r')
-      _ -> error "should not be empty"
+    -- --     ab
+    --      c
+    --        ed/Rde
+    -- -- h
+    --      ji/Rij
+      Right GT -> V (d <> d') (l <> Cat.singleton m <> revCat rr) (rel d m') (rel d r')
 
   -- -- ab c ed/Rde
   -- -- fg h ji/Rij
   V d l m r@(Rev rr) <> V d' l' m' r' =
-    case (preview _Cons m, preview _Cons m') of
-      (Just (mh, ht), Just (mh', mt')) ->
-        case joinAndCompare (prefix mh) (prefix mh') of
-          Left _ -> error "boom 8"
-      -- --   ab
-      --    c
-      --      ed/Rde  -- do the relative positions of ed and h matter?
-      -- --     fg
-      --      h
-      --        ji/Rij
-          Right LT -> V (d <> d') l m (r <> Rev (revCat (rel d (l' <> m'))) <> rel d r')
+    case joinAndCompare (prefix m) (prefix m') of
+      Left _ -> error "boom 8"
+  -- --   ab
+  --    c
+  --      ed/Rde  -- do the relative positions of ed and h matter?
+  -- --     fg
+  --      h
+  --        ji/Rij
+      Right LT -> V (d <> d') l m (r <> Rev (revCat (rel d (l' <> Cat.singleton m'))) <> rel d r')
 
-      -- --   ab
-      --    c
-      --      ed/Rde -- might last ed and head fg join up?
-      -- --   fg
-      --    h
-      --      ji/Rij
-          Right EQ -> V (d <> d') l (m <> revCat rr <> rel d l' <> rel d m') (rel d r')
+  -- --   ab
+  --    c
+  --      ed/Rde -- might last ed and head fg join up?
+  -- --   fg
+  --    h
+  --      ji/Rij
+      Right EQ -> V (d <> d') l m (r <> Rev (rel d l' <> Cat.singleton (rel d m')) <> rel d r')
 
-      -- --     ab
-      --      c
-      --        ed/Rde -- might last ed and head fg join up?
-      -- --   fg
-      --    h
-      --      ji/Rij
-          Right GT -> V (d <> d') (l <> m <> revCat rr <> rel d l') (rel d m') (rel d r')
-      _ -> error "should not be empty"
+  -- --     ab
+  --      c
+  --        ed/Rde -- might last ed and head fg join up?
+  -- --   fg
+  --    h
+  --      ji/Rij
+      Right GT -> V (d <> d') (l <> Cat.singleton m <> revCat rr <> rel d l') (rel d m') (rel d r')
 
 instance Monoid Layout where
   mempty = E 0
