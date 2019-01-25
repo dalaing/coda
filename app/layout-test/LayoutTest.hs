@@ -9,6 +9,7 @@ Portability : non-portable
 {-# LANGUAGE TypeApplications #-}
 module LayoutTest where
 
+import Control.Monad (replicateM)
 import Data.Char (isSpace)
 import Data.Foldable
 import Data.Text (Text)
@@ -92,6 +93,21 @@ exampleF5 =
   \bar\n\
   \"
 
+exampleF6 :: Text
+exampleF6 =
+  "  one\n\
+  \two\n\
+  \  three\n\
+  \"
+
+exampleF7 :: Text
+exampleF7 =
+  "one\n\
+  \  two\n\
+  \  three\n\
+  \"
+
+
 linesToLayouts :: Delta -> [Text] -> (Delta, [Layout])
 linesToLayouts d0 ls =
   let
@@ -140,6 +156,28 @@ newtype Indent = Indent { unIndent :: Int }
 instance Arbitrary Indent where
   arbitrary = Indent <$> choose (1, 5)
   shrink = fmap Indent . shrink . unIndent
+
+data ModelLines =
+  ModelLines [Text]
+  deriving (Eq, Ord)
+
+modelLinesToText :: ModelLines -> Text
+modelLinesToText (ModelLines ts) =
+  Text.unlines ts
+
+instance Show ModelLines where
+  show = Text.unpack . modelLinesToText
+
+instance Arbitrary ModelLines where
+  arbitrary = do
+    n <- choose (0, 5)
+    xs <- replicateM n $ do
+      Indent i <- arbitrary
+      t <- elements ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"]
+      pure $ Text.pack (replicate (2 * i) ' ') <> t
+    pure $ ModelLines xs
+  shrink (ModelLines xs) =
+    ModelLines <$> shrinkList (const []) xs
 
 data ModelNoDoErrors =
     MNDESingleToken Text
@@ -291,6 +329,7 @@ test_layout :: TestTree
 test_layout = testGroup "layout"
   [
     testProperty "all eq" $ allEq . textToLayouts . modelToText
+  , testProperty "all eq (lines)" $ allEq . textToLayouts . modelLinesToText
   , testProperty "all eq nde" $ allEq . textToLayouts . modelNoDoErrorsToText
   , testCase "E1" $ True @=? (allEq . textToLayouts) exampleE1
   , testCase "E2" $ True @=? (allEq . textToLayouts) exampleE2
@@ -300,6 +339,9 @@ test_layout = testGroup "layout"
   , testCase "F2" $ True @=? (allEq . textToLayouts) exampleF2
   , testCase "F3" $ True @=? (allEq . textToLayouts) exampleF3
   , testCase "F4" $ True @=? (allEq . textToLayouts) exampleF4
-  -- , testCase "F5e" $ [] @=? textToLayouts exampleF5
   , testCase "F5" $ True @=? (allEq . textToLayouts) exampleF5
+  -- , testCase "F6e" $ [] @=? textToLayouts exampleF6
+  , testCase "F6" $ True @=? (allEq . textToLayouts) exampleF6
+  , testCase "F7e" $ [] @=? textToLayouts exampleF7
+  , testCase "F7" $ True @=? (allEq . textToLayouts) exampleF7
   ]

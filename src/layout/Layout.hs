@@ -177,7 +177,7 @@ instance Semigroup Layout where
       -- --   f
         Right LT -> case preview _Snoc r of
           Nothing
-            | boring ts -> V (d <> d') l m (Rev . Cat.singleton $ (Run p (ds <> rel d ds') (ts <> rel d ts') (es <> rel d es') pr'))
+            | boring ts -> V (d <> d') l (Run p (ds <> rel d ds') (ts <> rel d ts') (es <> rel d es') pr') Empty
             | otherwise -> V (d <> d') l m (Rev . Cat.singleton . rel d $ rr')
           Just (rt, rh@(Run p ds ts es pr))
             | boring ts -> case joinAndCompare pr p' of
