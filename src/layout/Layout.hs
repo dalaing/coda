@@ -135,9 +135,12 @@ instance Semigroup Layout where
           --   ji/Rij
           Right EQ -> case preview _Cons l of
             Nothing -> V (d <> d') Empty lr (Rev (Cat.singleton (rel d m)) <> rel d r)
-            Just (lh@(Run p'' ds'' ts'' es'' pr''), lt)
-              | boring ts -> V (d <> d') Empty (Run p (ds <> rel d ds'') (ts <> rel d ts'') (es <> rel d es'') pr'') (Rev (revCat (rel d lt)) <> Rev (Cat.singleton (rel d m)) <> rel d r)
-              | otherwise -> V (d <> d') Empty lr (Rev (revCat (rel d l)) <> Rev (Cat.singleton (rel d m)) <> rel d r)
+            Just (lh@(Run p'' ds'' ts'' es'' pr''), lt) ->
+              -- TODO need to go through and do this kid of checking everywhere that we do these kinds of combinations
+              case joinAndCompare pr p'' of
+                Left _ -> V (d <> d') Empty (Run p (ds <> rel d ds'') (ts <> rel d ts'') (es <> rel d (snocCat es'' (LayoutMismatch 0 pr p''))) pr'') (Rev (revCat (rel d lt)) <> Rev (Cat.singleton (rel d m)) <> rel d r)
+                Right LT | boring ts -> V (d <> d') Empty (Run p (ds <> rel d ds'') (ts <> rel d ts'') (es <> rel d es'') pr'') (Rev (revCat (rel d lt)) <> Rev (Cat.singleton (rel d m)) <> rel d r)
+                _ -> V (d <> d') Empty lr (Rev (revCat (rel d l)) <> Rev (Cat.singleton (rel d m)) <> rel d r)
           --   a                -- this may combine with fg if ts is boring and the indents work out
           --     fg
           -- h
@@ -146,7 +149,7 @@ instance Semigroup Layout where
             Nothing -> V (d <> d') (Cat.singleton lr) (rel d m) (rel d r)
             Just (lh@(Run p'' ds'' ts'' es'' pr''), lt) ->
               case joinAndCompare pr p'' of
-                Left _ -> error "boom 2b"
+                Left _ -> V (d <> d') (Cat.singleton lr <> Cat.singleton (Run p'' (rel d ds'') (rel d ts'') (rel d $ snocCat es'' (LayoutMismatch 0 pr p'')) pr'') <> rel d lt) (rel d m) (rel d r)
                 Right LT | boring ts -> V (d <> d') (Cat.singleton (Run p (ds <> rel d ds'') (ts <> rel d ts'') (es <> rel d es'') pr'') <> rel d lt) (rel d m) (rel d r)
                 _ -> V (d <> d') (Cat.singleton lr <> rel d l) (rel d m) (rel d r)
 
@@ -233,8 +236,10 @@ instance Semigroup Layout where
         (Just (rt, rh@(Run p'' ds'' ts'' es'' pr'')), Just (lh@(Run p''' ds''' ts''' es''' pr'''), lt)) ->
           case joinAndCompare pr'' p''' of
             Left _ -> error "boom 8d"
-            Right LT | boring ts'' -> V (d <> d') l m (rt <> Rev (Cat.singleton (Run p'' (ds'' <> rel d ds''') (ts'' <> rel d ts''') (es'' <> rel d es''') pr''')) <> Rev (rel d (revCat lt)) <> Rev (Cat.singleton (rel d m')) <> rel d r')
-            _ -> V (d <> d') l m (r <> Rev (rel d (revCat l')) <> Rev (Cat.singleton (rel d m')) <> rel d r')
+            Right _ -> case joinAndCompare p'' p''' of
+              Left _ -> error "boom 8e"
+              Right LT | boring ts'' -> V (d <> d') l m (rt <> Rev (Cat.singleton (Run p'' (ds'' <> rel d ds''') (ts'' <> rel d ts''') (es'' <> rel d es''') pr''')) <> Rev (rel d (revCat lt)) <> Rev (Cat.singleton (rel d m')) <> rel d r')
+              _ -> V (d <> d') l m (r <> Rev (rel d (revCat l')) <> Rev (Cat.singleton (rel d m')) <> rel d r')
 
   -- --     ab
   --      c

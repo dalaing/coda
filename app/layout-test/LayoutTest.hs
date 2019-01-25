@@ -31,12 +31,6 @@ import qualified Syntax.Lexer as Lex
 import Syntax.Layout
 import qualified Syntax.Parser as Parse
 
-ptxt :: Int -> Text -> Layout
-ptxt n = dyckLayout 0 (Prefix . Text.pack . replicate n $ ' ') . Lex.lex
-
-txt :: Text -> Layout
-txt t = let dt = Delta . Text.lengthWord16 $ t in dyckLayout dt (fromText t) (Lex.lex t)
-
 exampleE1 :: Text
 exampleE1 =
   "foo\n\
@@ -52,6 +46,13 @@ exampleE2 =
   \\t  two\n\
   \"
 
+exampleE3 :: Text
+exampleE3 =
+  "foo\n\
+  \   bar\n\
+  \ \t baz\n\
+  \two\n\
+  \"
 
 exampleF1 :: Text
 exampleF1 =
@@ -293,6 +294,8 @@ test_layout = testGroup "layout"
   , testProperty "all eq nde" $ allEq . textToLayouts . modelNoDoErrorsToText
   , testCase "E1" $ True @=? (allEq . textToLayouts) exampleE1
   , testCase "E2" $ True @=? (allEq . textToLayouts) exampleE2
+  , testCase "E3e" $ [] @=? textToLayouts exampleE3
+  , testCase "E3" $ True @=? (allEq . textToLayouts) exampleE3
   , testCase "F1" $ True @=? (allEq . textToLayouts) exampleF1
   , testCase "F2" $ True @=? (allEq . textToLayouts) exampleF2
   , testCase "F3" $ True @=? (allEq . textToLayouts) exampleF3
