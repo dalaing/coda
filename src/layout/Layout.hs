@@ -234,7 +234,7 @@ instance Semigroup Layout where
           case joinAndCompare pr'' p''' of
             Left _ -> error "boom 8d"
             Right LT | boring ts'' -> V (d <> d') l m (rt <> Rev (Cat.singleton (Run p'' (ds'' <> rel d ds''') (ts'' <> rel d ts''') (es'' <> rel d es''') pr''')) <> Rev (rel d (revCat lt)) <> Rev (Cat.singleton (rel d m')) <> rel d r')
-            _ -> V (d <> d') l m (r <> Rev (rel d l' <> Cat.singleton (rel d m')) <> rel d r')
+            _ -> V (d <> d') l m (r <> Rev (rel d (revCat l')) <> Rev (Cat.singleton (rel d m')) <> rel d r')
 
   -- --     ab
   --      c
