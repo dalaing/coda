@@ -37,12 +37,21 @@ ptxt n = dyckLayout 0 (Prefix . Text.pack . replicate n $ ' ') . Lex.lex
 txt :: Text -> Layout
 txt t = let dt = Delta . Text.lengthWord16 $ t in dyckLayout dt (fromText t) (Lex.lex t)
 
-exampleE :: Text
-exampleE =
+exampleE1 :: Text
+exampleE1 =
   "foo\n\
   \\t\tbar\n\
   \  \tbaz\n\
   \"
+
+exampleE2 :: Text
+exampleE2 =
+  "foo\n\
+  \bar\n\
+  \  baz\n\
+  \\t  two\n\
+  \"
+
 
 exampleF1 :: Text
 exampleF1 =
@@ -64,6 +73,22 @@ exampleF3 =
   \  foo\n\
   \    bar\n\
   \  two\n\
+  \"
+
+exampleF4 :: Text
+exampleF4 =
+  "foo\n\
+  \  bar\n\
+  \    baz\n\
+  \two\n\
+  \"
+
+exampleF5 :: Text
+exampleF5 =
+  "do\n\
+  \  three\n\
+  \  foo\n\
+  \bar\n\
   \"
 
 linesToLayouts :: Delta -> [Text] -> (Delta, [Layout])
@@ -148,12 +173,29 @@ instance Arbitrary ModelNoDoErrors where
           genMT2 = do
             Indent i <- arbitrary
             pure [(0, "", "foo"), (i, Text.pack $ replicate i ' ', "bar")]
-          genMT3 = do
+          genMT3a = do
             Indent i <- arbitrary
             Indent j <- arbitrary
-            pure [(0, "", "foo"), (i, Text.pack $ replicate i '\t', "bar"), (i + j, Text.pack $ replicate i ' ' ++ replicate j '\t', "baz")]
+            pure [ (0, "", "foo")
+                 , (i, Text.pack $ replicate i ' ' ++ pure '\t', "bar")
+                 , (i + j, Text.pack $ replicate (i + j) ' ' ++ pure '\t', "baz")
+                 ]
+          genMT3b = do
+            Indent i <- arbitrary
+            Indent j <- arbitrary
+            pure [ (0, "", "foo")
+                 , (i, Text.pack $ '\t' : replicate i ' ', "bar")
+                 , (i + j, Text.pack $ '\t' : replicate (i + j) ' ', "baz")
+                 ]
+          genMT3c = do
+            Indent i <- arbitrary
+            Indent j <- arbitrary
+            pure [ (0, "", "foo")
+                 , (i, Text.pack $ " " <> replicate i ' ', "bar")
+                 , (i + j, Text.pack $ " " <> replicate i ' ' ++ pure '\t' ++ replicate j ' ', "baz")
+                 ]
         in
-          MNDEMultiToken <$> oneof [genMT1, genMT2, genMT3]
+          MNDEMultiToken <$> oneof [genMT1, genMT2, genMT3a, genMT3b, genMT3c]
       genLines = sized $ \s -> do
         n <- choose (1, fromIntegral . floor . sqrt . fromIntegral $ s)
         xs <- sequence . replicate n . resize (s `div` n) $ arbitrary
@@ -249,9 +291,12 @@ test_layout = testGroup "layout"
   [
     testProperty "all eq" $ allEq . textToLayouts . modelToText
   , testProperty "all eq nde" $ allEq . textToLayouts . modelNoDoErrorsToText
-  , testCase "E1" $ True @=? (allEq . textToLayouts) exampleE
+  , testCase "E1" $ True @=? (allEq . textToLayouts) exampleE1
+  , testCase "E2" $ True @=? (allEq . textToLayouts) exampleE2
   , testCase "F1" $ True @=? (allEq . textToLayouts) exampleF1
   , testCase "F2" $ True @=? (allEq . textToLayouts) exampleF2
-  , testCase "F3e" $ [] @=? textToLayouts exampleF3
   , testCase "F3" $ True @=? (allEq . textToLayouts) exampleF3
+  , testCase "F4" $ True @=? (allEq . textToLayouts) exampleF4
+  , testCase "F5e" $ [] @=? textToLayouts exampleF5
+  , testCase "F5" $ True @=? (allEq . textToLayouts) exampleF5
   ]
