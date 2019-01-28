@@ -90,6 +90,34 @@ revCat :: Relative a => Cat a -> Cat a
 revCat Empty = Empty
 revCat (x :< xs) = snocCat (revCat xs) x
 
+-- this double reverse is a bit worrying
+--
+-- if we append all of the things as we can, most things will get
+-- put together during construction
+--
+-- the problem will happen when we have runs of tokens at the same indent
+-- they get skewed down the right side of the V
+-- if we then prepend a "do" at a lower indentation, we need to do this
+-- to pull those out
+shuffle :: Delta -> Run -> Run -> Rev Cat Run -> (Run, Rev Cat Run)
+shuffle d m r (Rev rs) =
+  let
+    (r', rs') = shuffle' d m (review _Cons (r, revCat rs))
+ in
+    (r', Rev (revCat (rel d rs')))
+
+shuffle' :: Delta -> Run -> Cat Run -> (Run, Cat Run)
+shuffle' d r@(Run p ds ts es pr) cr =
+  case preview _Cons cr of
+    Nothing -> (r, Empty)
+    Just (Run p' ds' ts' es' pr', rs) ->
+      case joinAndCompare pr p' of
+        Left _ -> error "boom e1"
+        Right _ -> case joinAndCompare p p' of
+          Left _ -> error "boom e2"
+          Right LT | boring ts -> shuffle' d (Run p (ds <> rel d ds') (ts <> rel d ts') (es <> rel d es') pr') rs
+          _ -> (r, cr)
+
 instance Semigroup Layout where
   E 0 <> xs = xs
   xs <> E 0 = xs
@@ -123,10 +151,15 @@ instance Semigroup Layout where
           Right LT -> case preview _Cons l of
             Nothing -> case preview _Snoc r of
               Nothing
-                -- TODO
                 | boring ts -> S (d <> d') $ Run p (ds <> rel d ds') (ts <> rel d ts') (es <> rel d es') pr'
-                | otherwise -> V (d <> d') Empty lr (Rev (Cat.singleton (rel d m)) <> rel d r)
-              _ -> V (d <> d') Empty lr (Rev (Cat.singleton (rel d m)) <> rel d r)
+                | otherwise -> V (d <> d') Empty lr (Rev (Cat.singleton (rel d m)))
+              _ ->
+                let
+                  (m', r') = shuffle d lr m r
+                in
+                  case preview _Snoc r' of
+                    Nothing -> S (d <> d') m'
+                    Just _ -> V (d <> d') Empty m' r'
             Just (lh@(Run p'' ds'' ts'' es'' pr''), lt) ->
               case joinAndCompare pr p'' of
                 Left _ -> error "boom 2b"
@@ -215,7 +248,7 @@ instance Semigroup Layout where
     --        ji/Rij
         Right LT -> case (preview _Snoc r, preview _Cons l') of
           (Nothing, Nothing)
-                -- TODO
+                -- TODO (use the shuffle, also check l and r' for emptiness - we could end up with an S)
               | boring ts -> V (d <> d') l (Run p (ds <> rel d ds') (ts <> rel d ts') (es <> rel d es') pr') (rel d r')
               | otherwise -> V (d <> d') l m (Rev (Cat.singleton m') <> r')
           (Just (rt, rh@(Run p'' ds'' ts'' es'' pr'')), Nothing) ->

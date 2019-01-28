@@ -340,8 +340,7 @@ test_layout = testGroup "layout"
   , testCase "F3" $ True @=? (allEq . textToLayouts) exampleF3
   , testCase "F4" $ True @=? (allEq . textToLayouts) exampleF4
   , testCase "F5" $ True @=? (allEq . textToLayouts) exampleF5
-  -- , testCase "F6e" $ [] @=? textToLayouts exampleF6
   , testCase "F6" $ True @=? (allEq . textToLayouts) exampleF6
-  , testCase "F7e" $ [] @=? textToLayouts exampleF7
+  -- , testCase "F7e" $ [] @=? textToLayouts exampleF7
   , testCase "F7" $ True @=? (allEq . textToLayouts) exampleF7
   ]
