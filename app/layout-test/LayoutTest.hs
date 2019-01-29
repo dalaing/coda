@@ -107,6 +107,21 @@ exampleF7 =
   \  three\n\
   \"
 
+exampleF8 :: Text
+exampleF8 =
+  "    one\n\
+  \  two\n\
+  \    three\n\
+  \four\n\
+  \"
+
+exampleF9 :: Text
+exampleF9 =
+  "      one\n\
+  \    two\n\
+  \  three\n\
+  \four\n\
+  \"
 
 linesToLayouts :: Delta -> [Text] -> (Delta, [Layout])
 linesToLayouts d0 ls =
@@ -341,6 +356,8 @@ test_layout = testGroup "layout"
   , testCase "F4" $ True @=? (allEq . textToLayouts) exampleF4
   , testCase "F5" $ True @=? (allEq . textToLayouts) exampleF5
   , testCase "F6" $ True @=? (allEq . textToLayouts) exampleF6
-  -- , testCase "F7e" $ [] @=? textToLayouts exampleF7
   , testCase "F7" $ True @=? (allEq . textToLayouts) exampleF7
+  , testCase "F8" $ True @=? (allEq . textToLayouts) exampleF8
+  -- , testCase "F9e" $ [] @=? textToLayouts exampleF9
+  , testCase "F9" $ True @=? (allEq . textToLayouts) exampleF9
   ]

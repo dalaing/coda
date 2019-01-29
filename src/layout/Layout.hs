@@ -118,6 +118,17 @@ shuffle' d r@(Run p ds ts es pr) cr =
           Right LT | boring ts -> shuffle' d (Run p (ds <> rel d ds') (ts <> rel d ts') (es <> rel d es') pr') rs
           _ -> (r, cr)
 
+{-#
+The two prefixes need some thought
+If we have boring indentation and p < p', we're extending a Run
+
+The second check might be pr <= p' when p and pr don't match, and we're not handling this case.
+We could wrap pr in a Maybe, and only add it in when it doesn't match p.
+
+We might end up with different error information depending on which of these indentation comparisons fails to match.
+That will be fun to deal with.
+#-}
+
 instance Semigroup Layout where
   E 0 <> xs = xs
   xs <> E 0 = xs
@@ -248,16 +259,24 @@ instance Semigroup Layout where
     --        ji/Rij
         Right LT -> case (preview _Snoc r, preview _Cons l') of
           (Nothing, Nothing)
-                -- TODO (use the shuffle, also check l and r' for emptiness - we could end up with an S)
-              | boring ts -> V (d <> d') l (Run p (ds <> rel d ds') (ts <> rel d ts') (es <> rel d es') pr') (rel d r')
+              | boring ts ->
+                let
+                  (m'', r'') = shuffle d m m' r'
+                in
+                  V (d <> d') l m'' r''
+                -- V (d <> d') l (Run p (ds <> rel d ds') (ts <> rel d ts') (es <> rel d es') pr') (rel d r')
               | otherwise -> V (d <> d') l m (Rev (Cat.singleton m') <> r')
           (Just (rt, rh@(Run p'' ds'' ts'' es'' pr'')), Nothing) ->
             case joinAndCompare pr'' p' of
               Left _ -> error "boom 8b"
               Right _ -> case joinAndCompare p'' p' of
                 Left _ -> error "boom 8b"
-                -- TODO
-                Right LT | boring ts'' -> V (d <> d') l m (review _Snoc (rt, Run p'' (ds'' <> rel d ds') (ts'' <> rel d ts') (es'' <> rel d es') pr') <> rel d r')
+                Right LT | boring ts'' ->
+                  let
+                    (m'', r'') = shuffle d rh m' r'
+                  in
+                    V (d <> d') l m (rt <> Rev (Cat.singleton m'') <> r'')
+                  -- V (d <> d') l m (review _Snoc (rt, Run p'' (ds'' <> rel d ds') (ts'' <> rel d ts') (es'' <> rel d es') pr') <> rel d r')
                 _ -> V (d <> d') l m (r <> Rev (revCat (Cat.singleton (rel d m'))) <> rel d r')
           (Nothing, Just (lh@(Run p''' ds''' ts''' es''' pr'''), lt)) ->
             case joinAndCompare pr p''' of
@@ -310,17 +329,25 @@ instance Semigroup Layout where
     --      ji/Rij
         Right GT -> case (preview _Snoc r, preview _Cons l') of
           (Nothing, Nothing) ->
-            V (d <> d') (l <> Cat.singleton m) m' r'
+            V (d <> d') (l <> Cat.singleton m) (rel d m') (rel d r')
           (Just (rt, rh@(Run p'' ds'' ts'' es'' pr'')), Nothing) ->
             V (d <> d') (l <> Cat.singleton m <> revCat rr) (rel d m') (rel d r')
           (Nothing, Just (lh@(Run p''' ds''' ts''' es''' pr'''), lt)) ->
-            V (d <> d') (l <> Cat.singleton m <> rel d l') (rel d m') (rel d r')
+            case joinAndCompare pr p''' of
+              Left _ -> error "boom 8d"
+              Right _ -> case joinAndCompare p p''' of
+                Left _ -> error "boom 8e"
+                Right LT | boring ts ->
+                    (V d l (Run p (ds <> rel d ds''') (ts <> rel d ts''') (es <> rel d es''') pr''') Empty) <> V d' lt m' r'
+                _ -> V (d <> d') (l <> Cat.singleton m <> rel d l') (rel d m') (rel d r')
+                  -- V (d <> d') l m (Rev (revCat (rel d l')) <> Rev (Cat.singleton (rel d m')) <> rel d r')
           (Just (Rev rt, rh@(Run p'' ds'' ts'' es'' pr'')), Just (lh@(Run p''' ds''' ts''' es''' pr'''), lt)) ->
             case joinAndCompare pr'' p''' of
               Left _ -> error "boom 8d"
               Right _ -> case joinAndCompare p'' p''' of
                 Left _ -> error "boom 8e"
-                Right LT | boring ts'' -> (V d l m (review _Snoc (Rev rt, Run p'' (ds'' <> rel d ds''') (ts'' <> rel d ts''') (es'' <> rel d es''') pr'''))) <> (V d' lt m' r')
+                Right LT | boring ts'' ->
+                           (V d l m (review _Snoc (Rev rt, Run p'' (ds'' <> rel d ds''') (ts'' <> rel d ts''') (es'' <> rel d es''') pr'''))) <> (V d' lt m' r')
                 _ -> V (d <> d') (l <> Cat.singleton m <> revCat rr <> rel d l') (rel d m') (rel d r')
 
 instance Monoid Layout where
