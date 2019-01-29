@@ -118,7 +118,7 @@ shuffle' d r@(Run p ds ts es pr) cr =
           Right LT | boring ts -> shuffle' d (Run p (ds <> rel d ds') (ts <> rel d ts') (es <> rel d es') pr') rs
           _ -> (r, cr)
 
-{-#
+{-
 The two prefixes need some thought
 If we have boring indentation and p < p', we're extending a Run
 
@@ -127,7 +127,7 @@ We could wrap pr in a Maybe, and only add it in when it doesn't match p.
 
 We might end up with different error information depending on which of these indentation comparisons fails to match.
 That will be fun to deal with.
-#-}
+-}
 
 instance Semigroup Layout where
   E 0 <> xs = xs
@@ -138,9 +138,9 @@ instance Semigroup Layout where
   S d (Run p ds ts es pr) <> E d' = S (d <> d') $ Run p ds ts es pr
   S d lr@(Run p ds ts es pr) <> S d' rr@(Run p' ds' ts' es' pr') =
     case joinAndCompare pr p' of
-      Left _ -> S (d <> d') $ Run p (ds <> rel d ds') (ts <> rel d ts') (snocCat es (LayoutMismatch d pr p') <> rel d es') pr' -- no common prefix
+      Left _ -> S (d <> d') $ Run p (ds <> rel d ds') (ts <> rel d ts') (es <> rel d (snocCat es' (LayoutMismatch 0 pr p'))) pr' -- no common prefix
       Right _ -> case joinAndCompare p p' of
-        Left _ -> S (d <> d') $ Run p (ds <> rel d ds') (ts <> rel d ts') (snocCat es (LayoutMismatch d pr p') <> rel d es') pr' -- no common prefix
+        Left _ -> S (d <> d') $ Run p (ds <> rel d ds') (ts <> rel d ts') (es <> rel d (snocCat es' (LayoutMismatch 0 pr p'))) pr' -- no common prefix
         Right LT -- indent
           | boring ts -> S (d <> d') $ Run p (ds <> rel d ds') (ts <> rel d ts') (es <> rel d es') pr'
           | otherwise -> V (d <> d') Empty lr $ Rev $ Cat.singleton (rel d rr)
@@ -264,8 +264,7 @@ instance Semigroup Layout where
                   (m'', r'') = shuffle d m m' r'
                 in
                   V (d <> d') l m'' r''
-                -- V (d <> d') l (Run p (ds <> rel d ds') (ts <> rel d ts') (es <> rel d es') pr') (rel d r')
-              | otherwise -> V (d <> d') l m (Rev (Cat.singleton m') <> r')
+              | otherwise -> V (d <> d') l m (Rev (Cat.singleton (rel d m')) <> rel d r')
           (Just (rt, rh@(Run p'' ds'' ts'' es'' pr'')), Nothing) ->
             case joinAndCompare pr'' p' of
               Left _ -> error "boom 8b"
@@ -276,7 +275,6 @@ instance Semigroup Layout where
                     (m'', r'') = shuffle d rh m' r'
                   in
                     V (d <> d') l m (rt <> Rev (Cat.singleton m'') <> r'')
-                  -- V (d <> d') l m (review _Snoc (rt, Run p'' (ds'' <> rel d ds') (ts'' <> rel d ts') (es'' <> rel d es') pr') <> rel d r')
                 _ -> V (d <> d') l m (r <> Rev (revCat (Cat.singleton (rel d m'))) <> rel d r')
           (Nothing, Just (lh@(Run p''' ds''' ts''' es''' pr'''), lt)) ->
             case joinAndCompare pr p''' of
@@ -340,7 +338,6 @@ instance Semigroup Layout where
                 Right LT | boring ts ->
                     (V d l (Run p (ds <> rel d ds''') (ts <> rel d ts''') (es <> rel d es''') pr''') Empty) <> V d' lt m' r'
                 _ -> V (d <> d') (l <> Cat.singleton m <> rel d l') (rel d m') (rel d r')
-                  -- V (d <> d') l m (Rev (revCat (rel d l')) <> Rev (Cat.singleton (rel d m')) <> rel d r')
           (Just (Rev rt, rh@(Run p'' ds'' ts'' es'' pr'')), Just (lh@(Run p''' ds''' ts''' es''' pr'''), lt)) ->
             case joinAndCompare pr'' p''' of
               Left _ -> error "boom 8d"
