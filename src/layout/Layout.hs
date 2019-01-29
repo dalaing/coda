@@ -112,9 +112,10 @@ shuffle' d r@(Run p ds ts es pr) cr =
     Nothing -> (r, Empty)
     Just (Run p' ds' ts' es' pr', rs) ->
       case joinAndCompare pr p' of
-        Left _ -> error "boom e1"
+        Left _ -> (r, review _Cons $ (Run p' ds' ts' (snocCat es' (LayoutMismatch 0 pr p')) pr', rs))
         Right _ -> case joinAndCompare p p' of
-          Left _ -> error "boom e2"
+          Left _ -> (r, review _Cons $ (Run p' ds' ts' (snocCat es' (LayoutMismatch 0 p p')) pr', rs))
+          -- TODO we should be accumulating into the d here, but we aren't, and it is causing troubles
           Right LT | boring ts -> shuffle' d (Run p (ds <> rel d ds') (ts <> rel d ts') (es <> rel d es') pr') rs
           _ -> (r, cr)
 
@@ -138,9 +139,11 @@ instance Semigroup Layout where
   S d (Run p ds ts es pr) <> E d' = S (d <> d') $ Run p ds ts es pr
   S d lr@(Run p ds ts es pr) <> S d' rr@(Run p' ds' ts' es' pr') =
     case joinAndCompare pr p' of
-      Left _ -> S (d <> d') $ Run p (ds <> rel d ds') (ts <> rel d ts') (es <> rel d (snocCat es' (LayoutMismatch 0 pr p'))) pr' -- no common prefix
+      Left _ ->
+        V (d <> d') Empty lr (Rev . Cat.singleton . rel d $ Run p' ds' ts' (snocCat es' (LayoutMismatch 0 pr p')) pr')
       Right _ -> case joinAndCompare p p' of
-        Left _ -> S (d <> d') $ Run p (ds <> rel d ds') (ts <> rel d ts') (es <> rel d (snocCat es' (LayoutMismatch 0 pr p'))) pr' -- no common prefix
+        Left _ ->
+          V (d <> d') Empty lr (Rev . Cat.singleton . rel d $ Run p' ds' ts' (snocCat es' (LayoutMismatch 0 p p')) pr')
         Right LT -- indent
           | boring ts -> S (d <> d') $ Run p (ds <> rel d ds') (ts <> rel d ts') (es <> rel d es') pr'
           | otherwise -> V (d <> d') Empty lr $ Rev $ Cat.singleton (rel d rr)
@@ -152,9 +155,19 @@ instance Semigroup Layout where
   -- fg h ji/Rij
   S d lr@(Run p ds ts es pr) <> V d' l m@(Run p' ds' ts' es' pr') r =
       case joinAndCompare pr p' of
-        Left _ -> error "boom 2"
+        Left _ ->
+          case preview _Cons l of
+            Nothing ->
+              V (d <> d') (Cat.singleton lr) (rel d (Run p' ds' ts' (snocCat es' (LayoutMismatch 0 pr p')) pr')) (rel d r)
+            Just (lh@(Run p'' ds'' ts'' es'' pr''), lt) ->
+              V (d <> d') (Cat.singleton lr <> Cat.singleton (Run p'' (rel d ds'') (rel d ts'') (rel d (snocCat es'' (LayoutMismatch 0 pr p'))) pr'') <> rel d lt) (rel d m) (rel d r)
         Right _ -> case joinAndCompare p p' of
-          Left _ -> error "boom 2a"
+          Left _ ->
+            case preview _Cons l of
+              Nothing ->
+                V (d <> d') (Cat.singleton lr) (rel d (Run p' ds' ts' (snocCat es' (LayoutMismatch 0 p p')) pr')) (rel d r)
+              Just (lh@(Run p'' ds'' ts'' es'' pr''), lt) ->
+                V (d <> d') (Cat.singleton lr <> Cat.singleton (Run p'' (rel d ds'') (rel d ts'') (rel d (snocCat es'' (LayoutMismatch 0 p p'))) pr'') <> rel d lt) (rel d m) (rel d r)
             -- a                -- a and fg might combine if ts is boring
             --     fg
             --   h
