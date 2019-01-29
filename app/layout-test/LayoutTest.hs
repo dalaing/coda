@@ -354,11 +354,11 @@ test_layout = testGroup "layout"
   , testCase "F10" $ True @=? (allEq . textToLayouts) exampleF10
   -- , testCase "F10e" $ Layouts [] @=? Layouts (textToLayouts exampleF10)
   , testCase "E1" $ True @=? (allEq . textToLayouts) exampleE1
-  , testCase "E1e" $ Layouts [] @=? Layouts (textToLayouts exampleE1)
+  -- , testCase "E1e" $ Layouts [] @=? Layouts (textToLayouts exampleE1)
   , testCase "E2" $ True @=? (allEq . textToLayouts) exampleE2
   -- , testCase "E2e" $ Layouts [] @=? Layouts (textToLayouts exampleE2)
   , testCase "E3" $ True @=? (allEq . textToLayouts) exampleE3
-  -- , testCase "E3e" $ Layouts [] @=? Layouts (textToLayouts exampleE3)
+  , testCase "E3e" $ Layouts [] @=? Layouts (textToLayouts exampleE3)
   , testProperty "all eq (no do, no errors)" $ allEq . textToLayouts . modelLinesToText
   , testProperty "all eq (with do, no errors)" $ allEq . textToLayouts . modelLinesWithDoToText
   , testProperty "all eq (no do, with errors)" $ allEq . textToLayouts . modelLinesWithErrorsToText

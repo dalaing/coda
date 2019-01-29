@@ -112,9 +112,11 @@ shuffle' d r@(Run p ds ts es pr) cr =
     Nothing -> (r, Empty)
     Just (Run p' ds' ts' es' pr', rs) ->
       case joinAndCompare pr p' of
-        Left _ -> (r, review _Cons $ (Run p' ds' ts' (snocCat es' (LayoutMismatch 0 pr p')) pr', rs))
+        -- Left _ -> (r, review _Cons $ (Run p' ds' ts' (snocCat es' (LayoutMismatch 0 pr p')) pr', rs))
+        Left _ -> (r, review _Cons $ (Run p' ds' ts' es' pr', rs))
         Right _ -> case joinAndCompare p p' of
-          Left _ -> (r, review _Cons $ (Run p' ds' ts' (snocCat es' (LayoutMismatch 0 p p')) pr', rs))
+           -- Left _ -> (r, review _Cons $ (Run p' ds' ts' (snocCat es' (LayoutMismatch 0 p p')) pr', rs))
+          Left _ -> (r, review _Cons $ (Run p' ds' ts' es' pr', rs))
           -- TODO we should be accumulating into the d here, but we aren't, and it is causing troubles
           Right LT | boring ts -> shuffle' d (Run p (ds <> rel d ds') (ts <> rel d ts') (es <> rel d es') pr') rs
           _ -> (r, cr)
@@ -200,9 +202,11 @@ instance Semigroup Layout where
             Nothing -> V (d <> d') Empty lr (Rev (Cat.singleton (rel d m)) <> rel d r)
             Just (lh@(Run p'' ds'' ts'' es'' pr''), lt) ->
               case joinAndCompare pr p'' of
-                Left _ -> V (d <> d') Empty (Run p (ds <> rel d ds'') (ts <> rel d ts'') (es <> rel d (snocCat es'' (LayoutMismatch 0 pr p''))) pr'') (Rev (revCat (rel d lt)) <> Rev (Cat.singleton (rel d m)) <> rel d r)
+                Left _ -> -- TODO fixme
+                  V (d <> d') Empty (Run p (ds <> rel d ds'') (ts <> rel d ts'') (es <> rel d (snocCat es'' (LayoutMismatch 0 pr p''))) pr'') (Rev (revCat (rel d lt)) <> Rev (Cat.singleton (rel d m)) <> rel d r)
                 Right _ -> case joinAndCompare p p'' of
-                  Left _ -> V (d <> d') Empty (Run p (ds <> rel d ds'') (ts <> rel d ts'') (es <> rel d (snocCat es'' (LayoutMismatch 0 pr p''))) pr'') (Rev (revCat (rel d lt)) <> Rev (Cat.singleton (rel d m)) <> rel d r)
+                  Left _ -> -- TODO fixme
+                    V (d <> d') Empty (Run p (ds <> rel d ds'') (ts <> rel d ts'') (es <> rel d (snocCat es'' (LayoutMismatch 0 pr p''))) pr'') (Rev (revCat (rel d lt)) <> Rev (Cat.singleton (rel d m)) <> rel d r)
                   Right LT | boring ts -> S d (Run p (ds <> rel d ds'') (ts <> rel d ts'') (es <> rel d es'') pr'') <> V d' lt m r
                   _ -> V (d <> d') Empty lr (Rev (revCat (rel d l)) <> Rev (Cat.singleton (rel d m)) <> rel d r)
           --   a                -- this may combine with fg if ts is boring and the indents work out
@@ -239,9 +243,11 @@ instance Semigroup Layout where
             | otherwise -> V (d <> d') l m (Rev . Cat.singleton . rel d $ rr')
           Just (rt, rh@(Run p ds ts es pr))
             | boring ts -> case joinAndCompare pr p' of
-                Left _ -> V (d <> d') l m (review _Snoc (rt, Run p (ds <> rel d ds') (ts <> rel d ts') (es <> rel d (snocCat es' (LayoutMismatch 0 pr p'))) pr'))
+                Left _ ->
+                  V (d <> d') l m (Rev (Cat.singleton rh) <> rt <> Rev (Cat.singleton (rel d (Run p' ds' ts' (snocCat es' (LayoutMismatch 0 pr p')) pr'))))
                 Right _ -> case joinAndCompare p p' of
-                  Left _ -> V (d <> d') l m (review _Snoc (rt, Run p (ds <> rel d ds') (ts <> rel d ts') (es <> rel d (snocCat es' (LayoutMismatch 0 p p'))) pr'))
+                  Left _ ->
+                    V (d <> d') l m (Rev (Cat.singleton rh) <> rt <> Rev (Cat.singleton (rel d (Run p' ds' ts' (snocCat es' (LayoutMismatch 0 p p')) pr'))))
                   Right LT -> V (d <> d') l m (review _Snoc (rt, Run p (ds <> rel d ds') (ts <> rel d ts') (es <> rel d es') pr'))
                   Right EQ -> V (d <> d') l m (r <> Rev (Cat.singleton (rel d rr')))
                   Right GT -> V (d <> d') l m (r <> Rev (Cat.singleton (rel d rr')))
