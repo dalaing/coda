@@ -280,20 +280,22 @@ modelLinesWithErrorsToText (ModelLinesWithErrors ml) = modelLinesToText ml
 instance Show ModelLinesWithErrors where
   show = Text.unpack . modelLinesWithErrorsToText
 
+addTab :: ModelLines -> Gen ModelLinesWithErrors
+addTab (ModelLines ls) = do
+  let l1 = length ls
+  if l1 == 0
+  then pure $ ModelLinesWithErrors (ModelLines [])
+  else do
+    n <- choose (0, l1 - 1)
+    let
+      l = ls !! n
+      l2 = Text.length (_indent l)
+    m <- choose (0, l2 - 1)
+    let ls' = ls & ix n . indent . ix m .~ '\t'
+    pure $ ModelLinesWithErrors (ModelLines ls')
+
 instance Arbitrary ModelLinesWithErrors where
-  arbitrary = do
-    ModelLines ls <- arbitrary
-    let l1 = length ls
-    if l1 == 0
-    then pure $ ModelLinesWithErrors (ModelLines [])
-    else do
-      n <- choose (0, l1 - 1)
-      let
-        l = ls !! n
-        l2 = Text.length (_indent l)
-      m <- choose (0, l2 - 1)
-      let ls' = ls & ix n . indent . ix m .~ '\t'
-      pure $ ModelLinesWithErrors (ModelLines ls')
+  arbitrary = arbitrary >>= addTab
   shrink (ModelLinesWithErrors ml) =
     ModelLinesWithErrors <$> filter hasTab (shrink ml)
 
@@ -303,6 +305,12 @@ data ModelLinesWithDo =
   | MLWDTwo ModelLinesWithDo ModelLinesWithDo
   | MLWDThree ModelLinesWithDo ModelLinesWithDo ModelLinesWithDo
   deriving (Eq, Ord)
+
+hasDo :: ModelLinesWithDo -> Bool
+hasDo (MLWDLines _) = False
+hasDo (MLWDDo _ _) = True
+hasDo (MLWDTwo m1 m2) = hasDo m1 || hasDo m2
+hasDo (MLWDThree m1 m2 m3) = hasDo m1 || hasDo m2 || hasDo m3
 
 modelLinesWithDoToModelLines :: ModelLinesWithDo -> ModelLines
 modelLinesWithDoToModelLines (MLWDLines ml) =
@@ -341,10 +349,18 @@ genMLWD s =
 
 instance Arbitrary ModelLinesWithDo where
   arbitrary = sized genMLWD
-  shrink (MLWDLines ml) = MLWDLines <$> shrink ml
-  shrink (MLWDDo i ml) = ml : (MLWDDo i <$> shrink ml)
-  shrink (MLWDTwo m1 m2) = m1 : m2 : [MLWDTwo n1 n2 | (n1, n2) <- shrink (m1, m2)]
-  shrink (MLWDThree m1 m2 m3) = m1 : m2 : m3 : [MLWDThree n1 n2 n3 | (n1, n2, n3) <- shrink (m1, m2, m3)]
+  shrink (MLWDLines ml) = []
+  shrink (MLWDDo i ml) =
+    if hasDo ml then [ml] else [] ++ (MLWDDo i <$> shrink ml)
+  shrink (MLWDTwo m1 m2) =
+    if hasDo m1 then [m1] else [] ++
+    if hasDo m2 then [m2] else [] ++
+    [MLWDTwo n1 n2 | (n1, n2) <- shrink (m1, m2)]
+  shrink (MLWDThree m1 m2 m3) =
+    if hasDo m1 then [m1] else [] ++
+    if hasDo m2 then [m2] else [] ++
+    if hasDo m3 then [m3] else [] ++
+    [MLWDThree n1 n2 n3 | (n1, n2, n3) <- shrink (m1, m2, m3)]
 
 exampleF1 :: Text
 exampleF1 =
@@ -422,6 +438,7 @@ exampleF10 =
   \  three\n\
   \"
 
+-- this is the case that requires the trailing prefixes
 exampleE1 :: Text
 exampleE1 =
   "foo\n\
@@ -445,71 +462,49 @@ exampleE3 =
   \two\n\
   \"
 
-class HasModelLines a where
-  modelToText :: a -> Text
-
-instance HasModelLines ModelLines where
-  modelToText = modelLinesToText
-
-instance HasModelLines ModelLinesWithDo where
-  modelToText = modelLinesWithDoToText
-
-instance HasModelLines ModelLinesWithErrors where
-  modelToText = modelLinesWithErrorsToText
-
-testModelAllEq :: HasModelLines a => a -> Property
-testModelAllEq x =
+testAllEq :: Text -> Property
+testAllEq x =
   let
-    ls = textToLayouts . modelToText $ x
+    ls = textToLayouts x
   in
     counterexample (show (Layouts ls)) ((=== True) . allEq $ ls)
 
-testAllEq :: ModelLines -> Property
-testAllEq = testModelAllEq
-
-testAllEqWithDo :: ModelLinesWithDo -> Property
-testAllEqWithDo = testModelAllEq
-
-testAllEqWithErrors :: ModelLinesWithErrors -> Property
-testAllEqWithErrors = testModelAllEq
-
-testModelDeltas :: HasModelLines a => a -> Property
-testModelDeltas x =
+testDeltas :: Text -> Property
+testDeltas x =
   let
-    ls = textToLayouts . modelToText $ x
+    ls = textToLayouts x
   in
     counterexample (show (Layouts ls)) ((=== Right ()) . checkLayouts $ ls)
 
-testDeltas :: ModelLines -> Property
-testDeltas = testModelDeltas
-
-testDeltasWithDo :: ModelLinesWithDo -> Property
-testDeltasWithDo = testModelDeltas
-
-testDeltasWithErrors :: ModelLinesWithErrors -> Property
-testDeltasWithErrors = testModelDeltas
+assertAllEq :: Text -> Assertion
+assertAllEq t =
+  let
+    ls = textToLayouts t
+  in
+    if allEq ls
+    then pure ()
+    else assertFailure (show (Layouts ls))
 
 test_layout :: TestTree
 test_layout = testGroup "layout"
   [
-    testCase "F1" $ True @=? (allEq . textToLayouts) exampleF1
-  , testCase "F2" $ True @=? (allEq . textToLayouts) exampleF2
-  , testCase "F3" $ True @=? (allEq . textToLayouts) exampleF3
-  , testCase "F4" $ True @=? (allEq . textToLayouts) exampleF4
-  , testCase "F5" $ True @=? (allEq . textToLayouts) exampleF5
-  , testCase "F6" $ True @=? (allEq . textToLayouts) exampleF6
-  , testCase "F7" $ True @=? (allEq . textToLayouts) exampleF7
-  , testCase "F8" $ True @=? (allEq . textToLayouts) exampleF8
-  , testCase "F9" $ True @=? (allEq . textToLayouts) exampleF9
-  , testCase "F10" $ True @=? (allEq . textToLayouts) exampleF10
-  , testCase "E1" $ True @=? (allEq . textToLayouts) exampleE1
-  , testCase "E2" $ True @=? (allEq . textToLayouts) exampleE2
-  , testCase "E3" $ True @=? (allEq . textToLayouts) exampleE3
-  -- , testCase "E3e" $ Layouts [] @=? Layouts (textToLayouts exampleE3)
-  , testProperty "all eq (no do, no errors)" $ testAllEq
-  , testProperty "deltas (no do, no errors)" $ testDeltas
-  , testProperty "all eq (with do, no errors)" $ testAllEqWithDo
-  , testProperty "deltas (with do, no errors)" $ testDeltasWithDo
-  , testProperty "all eq (no do, with errors)" $ testAllEqWithErrors
-  , testProperty "deltas (no do, with errors)" $ testDeltasWithErrors
+    testCase "F1" $ assertAllEq exampleF1
+  , testCase "F2" $ assertAllEq exampleF2
+  , testCase "F3" $ assertAllEq exampleF3
+  , testCase "F4" $ assertAllEq exampleF4
+  , testCase "F5" $ assertAllEq exampleF5
+  , testCase "F6" $ assertAllEq exampleF6
+  , testCase "F7" $ assertAllEq exampleF7
+  , testCase "F8" $ assertAllEq exampleF8
+  , testCase "F9" $ assertAllEq exampleF9
+  , testCase "F10" $ assertAllEq exampleF10
+  , testCase "E1" $ assertAllEq exampleE1
+  , testCase "E2" $ assertAllEq exampleE2
+  , testCase "E3" $ assertAllEq exampleE3
+  , testProperty "all eq (no do, no errors)" $ testAllEq . modelLinesToText
+  , testProperty "deltas (no do, no errors)" $ testDeltas . modelLinesToText
+  , testProperty "all eq (with do, no errors)" $ testAllEq . modelLinesWithDoToText
+  , testProperty "deltas (with do, no errors)" $ testDeltas . modelLinesWithDoToText
+  , testProperty "all eq (no do, with errors)" $ testAllEq . modelLinesWithErrorsToText
+  , testProperty "deltas (no do, with errors)" $ testDeltas . modelLinesWithErrorsToText
   ]
