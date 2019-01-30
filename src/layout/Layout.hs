@@ -112,14 +112,20 @@ shuffle' d r@(Run p ds ts es pr) cr =
     Nothing -> (r, Empty)
     Just (Run p' ds' ts' es' pr', rs) ->
       case joinAndCompare pr p' of
+        -- if we add errors here, they end up doubled - this is weird, and we need to get to the bottom of this
         -- Left _ -> (r, review _Cons $ (Run p' ds' ts' (snocCat es' (LayoutMismatch 0 pr p')) pr', rs))
         Left _ -> (r, review _Cons $ (Run p' ds' ts' es' pr', rs))
         Right _ -> case joinAndCompare p p' of
-           -- Left _ -> (r, review _Cons $ (Run p' ds' ts' (snocCat es' (LayoutMismatch 0 p p')) pr', rs))
+          -- Left _ -> (r, review _Cons $ (Run p' ds' ts' (snocCat es' (LayoutMismatch 0 p p')) pr', rs))
           Left _ -> (r, review _Cons $ (Run p' ds' ts' es' pr', rs))
-          -- TODO we should be accumulating into the d here, but we aren't, and it is causing troubles
+          -- TODO we should be accumulating into the d here? but we aren't, and it might be causing troubles
           Right LT | boring ts -> shuffle' d (Run p (ds <> rel d ds') (ts <> rel d ts') (es <> rel d es') pr') rs
           _ -> (r, cr)
+
+{-
+The recursive calls are operating with the wrong deltas.
+It _might_ all work out in the end, but the burden on proof is on me if I'm going to rely on it.
+-}
 
 {-
 The two prefixes need some thought
@@ -132,6 +138,14 @@ We might end up with different error information depending on which of these ind
 That will be fun to deal with.
 -}
 
+checkPrefixes :: Prefix -> Prefix -> Run -> (Run -> Layout) -> (Ordering -> Layout) -> Layout
+checkPrefixes pr p (Run p' ds' ts' es' pr') errFn successFn =
+  case joinAndCompare pr p' of
+    Left _ -> errFn (Run p' ds' ts' (snocCat es' (LayoutMismatch 0 pr p')) pr')
+    Right _ -> case joinAndCompare p p' of
+      Left _ -> errFn (Run p' ds' ts' (snocCat es' (LayoutMismatch 0 p p')) pr')
+      Right c -> successFn c
+
 instance Semigroup Layout where
   E 0 <> xs = xs
   xs <> E 0 = xs
@@ -140,18 +154,12 @@ instance Semigroup Layout where
   E d <> V d' l m r = V (d <> d') (rel d l) (rel d m) (rel d r)
   S d (Run p ds ts es pr) <> E d' = S (d <> d') $ Run p ds ts es pr
   S d lr@(Run p ds ts es pr) <> S d' rr@(Run p' ds' ts' es' pr') =
-    case joinAndCompare pr p' of
-      Left _ ->
-        V (d <> d') Empty lr (Rev . Cat.singleton . rel d $ Run p' ds' ts' (snocCat es' (LayoutMismatch 0 pr p')) pr')
-      Right _ -> case joinAndCompare p p' of
-        Left _ ->
-          V (d <> d') Empty lr (Rev . Cat.singleton . rel d $ Run p' ds' ts' (snocCat es' (LayoutMismatch 0 p p')) pr')
-        Right LT -- indent
-          | boring ts -> S (d <> d') $ Run p (ds <> rel d ds') (ts <> rel d ts') (es <> rel d es') pr'
-          | otherwise -> V (d <> d') Empty lr $ Rev $ Cat.singleton (rel d rr)
-        -- we bias towards the right hand side when indents are equal
-        Right EQ -> V (d <> d') Empty lr (Rev . Cat.singleton . rel d $ rr)
-        Right GT -> V (d <> d') (Cat.singleton lr) (rel d rr) Empty
+    checkPrefixes pr p rr (V (d <> d') Empty lr . Rev . Cat.singleton . rel d) $ \case
+      LT
+        | boring ts -> S (d <> d') $ Run p (ds <> rel d ds') (ts <> rel d ts') (es <> rel d es') pr'
+        | otherwise -> V (d <> d') Empty lr $ Rev $ Cat.singleton (rel d rr)
+      EQ -> V (d <> d') Empty lr (Rev . Cat.singleton . rel d $ rr)
+      GT -> V (d <> d') (Cat.singleton lr) (rel d rr) Empty
 
   -- a
   -- fg h ji/Rij
@@ -162,14 +170,14 @@ instance Semigroup Layout where
             Nothing ->
               V (d <> d') (Cat.singleton lr) (rel d (Run p' ds' ts' (snocCat es' (LayoutMismatch 0 pr p')) pr')) (rel d r)
             Just (lh@(Run p'' ds'' ts'' es'' pr''), lt) ->
-              V (d <> d') (Cat.singleton lr <> Cat.singleton (Run p'' (rel d ds'') (rel d ts'') (rel d (snocCat es'' (LayoutMismatch 0 pr p'))) pr'') <> rel d lt) (rel d m) (rel d r)
+              V (d <> d') (Cat.singleton lr <> Cat.singleton (rel d (Run p'' ds'' ts'' (snocCat es'' (LayoutMismatch 0 pr p')) pr'')) <> rel d lt) (rel d m) (rel d r)
         Right _ -> case joinAndCompare p p' of
           Left _ ->
             case preview _Cons l of
               Nothing ->
                 V (d <> d') (Cat.singleton lr) (rel d (Run p' ds' ts' (snocCat es' (LayoutMismatch 0 p p')) pr')) (rel d r)
               Just (lh@(Run p'' ds'' ts'' es'' pr''), lt) ->
-                V (d <> d') (Cat.singleton lr <> Cat.singleton (Run p'' (rel d ds'') (rel d ts'') (rel d (snocCat es'' (LayoutMismatch 0 p p'))) pr'') <> rel d lt) (rel d m) (rel d r)
+                V (d <> d') (Cat.singleton lr <> Cat.singleton (rel d (Run p'' ds'' ts'' (snocCat es'' (LayoutMismatch 0 p p')) pr'')) <> rel d lt) (rel d m) (rel d r)
             -- a                -- a and fg might combine if ts is boring
             --     fg
             --   h
@@ -200,15 +208,17 @@ instance Semigroup Layout where
           --   ji/Rij
           Right EQ -> case preview _Cons l of
             Nothing -> V (d <> d') Empty lr (Rev (Cat.singleton (rel d m)) <> rel d r)
-            Just (lh@(Run p'' ds'' ts'' es'' pr''), lt) ->
-              case joinAndCompare pr p'' of
-                Left _ -> -- TODO fixme
-                  V (d <> d') Empty (Run p (ds <> rel d ds'') (ts <> rel d ts'') (es <> rel d (snocCat es'' (LayoutMismatch 0 pr p''))) pr'') (Rev (revCat (rel d lt)) <> Rev (Cat.singleton (rel d m)) <> rel d r)
-                Right _ -> case joinAndCompare p p'' of
-                  Left _ -> -- TODO fixme
-                    V (d <> d') Empty (Run p (ds <> rel d ds'') (ts <> rel d ts'') (es <> rel d (snocCat es'' (LayoutMismatch 0 pr p''))) pr'') (Rev (revCat (rel d lt)) <> Rev (Cat.singleton (rel d m)) <> rel d r)
-                  Right LT | boring ts -> S d (Run p (ds <> rel d ds'') (ts <> rel d ts'') (es <> rel d es'') pr'') <> V d' lt m r
-                  _ -> V (d <> d') Empty lr (Rev (revCat (rel d l)) <> Rev (Cat.singleton (rel d m)) <> rel d r)
+            Just (lh@(Run p'' ds'' ts'' es'' pr''), lt)
+              | not (Cat.null es'') -> V (d <> d') Empty lr (Rev (revCat (rel d l)) <> Rev (Cat.singleton (rel d m)) <> rel d r)
+              | otherwise ->
+                case joinAndCompare pr p'' of
+                  Left _ ->
+                    V (d <> d') Empty lr (rel d (Rev (Cat.singleton (Run p'' ds'' ts'' (snocCat es'' (LayoutMismatch 0 pr pr'')) pr'')) <> Rev (revCat lt) <> Rev (Cat.singleton m) <> r))
+                  Right _ -> case joinAndCompare p p'' of
+                    Left _ ->
+                      V (d <> d') Empty lr (rel d (Rev (Cat.singleton (Run p'' ds'' ts'' (snocCat es'' (LayoutMismatch 0 p pr'')) pr'')) <> Rev (revCat lt) <> Rev (Cat.singleton m) <> r))
+                    Right LT | boring ts -> S d (Run p (ds <> rel d ds'') (ts <> rel d ts'') (es <> rel d es'') pr'') <> V d' lt m r
+                    _ -> V (d <> d') Empty lr (Rev (revCat (rel d l)) <> Rev (Cat.singleton (rel d m)) <> rel d r)
           --   a                -- this may combine with fg if ts is boring and the indents work out
           --     fg
           -- h
@@ -217,7 +227,7 @@ instance Semigroup Layout where
             Nothing -> V (d <> d') (Cat.singleton lr) (rel d m) (rel d r)
             Just (lh@(Run p'' ds'' ts'' es'' pr''), lt) ->
               case joinAndCompare pr p'' of
-                Left _ -> V (d <> d') (Cat.singleton lr <> Cat.singleton (Run p'' (rel d ds'') (rel d ts'') (rel d $ snocCat es'' (LayoutMismatch 0 pr p'')) pr'') <> rel d lt) (rel d m) (rel d r)
+                Left _ -> V (d <> d') (Cat.singleton lr <> Cat.singleton (rel d (Run p'' ds'' ts'' (snocCat es'' (LayoutMismatch 0 pr p'')) pr'')) <> rel d lt) (rel d m) (rel d r)
                 Right _ -> case joinAndCompare p p'' of
                   Left _ -> V (d <> d') (Cat.singleton lr <> Cat.singleton (Run p'' (rel d ds'') (rel d ts'') (rel d $ snocCat es'' (LayoutMismatch 0 pr p'')) pr'') <> rel d lt) (rel d m) (rel d r)
                   Right LT | boring ts -> S d (Run p (ds <> rel d ds'') (ts <> rel d ts'') (es <> rel d es'') pr'') <> V d' lt m r
@@ -350,21 +360,13 @@ instance Semigroup Layout where
           (Just (rt, rh@(Run p'' ds'' ts'' es'' pr'')), Nothing) ->
             V (d <> d') (l <> Cat.singleton m <> revCat rr) (rel d m') (rel d r')
           (Nothing, Just (lh@(Run p''' ds''' ts''' es''' pr'''), lt)) ->
-            case joinAndCompare pr p''' of
-              Left _ -> error "boom 8d"
-              Right _ -> case joinAndCompare p p''' of
-                Left _ -> error "boom 8e"
-                Right LT | boring ts ->
-                    (V d l (Run p (ds <> rel d ds''') (ts <> rel d ts''') (es <> rel d es''') pr''') Empty) <> V d' lt m' r'
-                _ -> V (d <> d') (l <> Cat.singleton m <> rel d l') (rel d m') (rel d r')
+            checkPrefixes pr p lh (\_ -> error "boom B") $ \case
+              LT | boring ts -> (V d l (Run p (ds <> rel d ds''') (ts <> rel d ts''') (es <> rel d es''') pr''') Empty) <> V d' lt m' r'
+              _ -> V (d <> d') (l <> Cat.singleton m <> rel d l') (rel d m') (rel d r')
           (Just (Rev rt, rh@(Run p'' ds'' ts'' es'' pr'')), Just (lh@(Run p''' ds''' ts''' es''' pr'''), lt)) ->
-            case joinAndCompare pr'' p''' of
-              Left _ -> error "boom 8d"
-              Right _ -> case joinAndCompare p'' p''' of
-                Left _ -> error "boom 8e"
-                Right LT | boring ts'' ->
-                           (V d l m (review _Snoc (Rev rt, Run p'' (ds'' <> rel d ds''') (ts'' <> rel d ts''') (es'' <> rel d es''') pr'''))) <> (V d' lt m' r')
-                _ -> V (d <> d') (l <> Cat.singleton m <> revCat rr <> rel d l') (rel d m') (rel d r')
+            checkPrefixes pr'' p'' lh (\_ -> error "boom A") $ \case
+              LT | boring ts'' -> (V d l m (review _Snoc (Rev rt, Run p'' (ds'' <> rel d ds''') (ts'' <> rel d ts''') (es'' <> rel d es''') pr'''))) <> (V d' lt m' r')
+              _ -> V (d <> d') (l <> Cat.singleton m <> revCat rr <> rel d l') (rel d m') (rel d r')
 
 instance Monoid Layout where
   mempty = E 0

@@ -8,15 +8,19 @@ Portability : non-portable
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 module LayoutTest where
 
-import Control.Monad (replicateM)
+import Control.Monad (replicateM, when, unless, forM)
 import Data.Char (isSpace)
 import Data.Foldable
 import Data.Text (Text)
 import qualified Data.Text as Text
 import qualified Data.Text.Unsafe as Text
+
+import Control.Monad.State (MonadState, evalStateT, get, put)
+import Control.Monad.Except (MonadError, runExcept, throwError)
 
 import Control.Lens hiding (elements)
 
@@ -115,6 +119,108 @@ showRevCat pad (Rev cs) = showCat pad (revCat cs)
 
 instance Show Layouts where
   show = Text.unpack . Text.unlines .  showLayouts
+
+data DeltaError =
+    DeltaOutOfOrder Delta Delta
+  | BadRange Delta Delta Delta
+  | DyckEmpty Delta
+  | DyckMismatch [Delta] [Delta]
+  | DyckErrorMismatch [Delta] [Delta]
+  deriving (Eq, Ord, Show)
+
+checkLayouts :: [Layout] -> Either DeltaError ()
+checkLayouts =
+  runExcept . flip evalStateT (Delta 0) . traverse_ (\l -> put (Delta 0) >> checkLayout l)
+
+checkLayout :: (MonadState Delta m, MonadError DeltaError m) => Layout -> m ()
+checkLayout (E d) = do
+  checkDelta d
+  put d
+checkLayout (S _ r) = do
+  checkRun r
+checkLayout (V _ l m r) = do
+  checkCatRun l
+  checkRun m
+  checkRevCatRun r
+
+checkDelta :: (MonadState Delta m, MonadError DeltaError m) => Delta -> m ()
+checkDelta d = do
+  d' <- get
+  when (d < d') $
+    throwError $ DeltaOutOfOrder d' d
+
+checkRun :: (MonadState Delta m, MonadError DeltaError m) => Run -> m ()
+checkRun (Run _ ds ts es _) = do
+  d <- get
+  dd <- checkCatDyck ds
+  dt <- checkDyck ts
+  when (dd /= dt) $
+    throwError $ DyckMismatch dd dt
+  when (null dd) $ do
+    throwError $ DyckEmpty d
+  let m = maximum dd
+  checkErrors d m es
+  put m
+  pure ()
+
+checkCatRun :: (MonadState Delta m, MonadError DeltaError m) => Cat Run -> m ()
+checkCatRun cr = case preview _Cons cr of
+  Nothing -> pure ()
+  Just (r, rs) -> do
+    checkRun r
+    checkCatRun rs
+
+checkRevCatRun :: (MonadState Delta m, MonadError DeltaError m) => Rev Cat Run -> m ()
+checkRevCatRun (Rev r) = checkCatRun (revCat r)
+
+checkDyck :: (MonadState Delta m, MonadError DeltaError m) => Dyck -> m [Delta]
+checkDyck (Dyck _ ts1 _ ts2 _ _) = do
+  let ts = catTokenDeltas ts1 <> catTokenDeltas ts2
+  old <- get
+  forM ts $ \d -> do
+    checkDelta d
+    put d
+  put old
+  pure ts
+
+checkCatDyck :: (MonadState Delta m, MonadError DeltaError m) => Cat Dyck -> m [Delta]
+checkCatDyck cs = case preview _Cons cs of
+  Nothing -> pure []
+  Just (d, ds) -> do
+    a <- checkDyck d
+    b <- checkCatDyck ds
+    pure $ a ++ b
+
+checkErrors :: (MonadError DeltaError m) => Delta -> Delta -> Cat LayoutMismatch -> m ()
+checkErrors d1 d2 cs = case preview _Cons cs of
+  Nothing -> pure ()
+  Just (e, es) -> do
+    checkError d1 d2 e
+    checkErrors d1 d2 es
+
+checkError :: (MonadError DeltaError m) => Delta -> Delta -> LayoutMismatch -> m ()
+checkError d1 d2 (LayoutMismatch d _ _) = do
+  unless (d1 <= d && d < d2) $
+    throwError $ BadRange d1 d d2
+
+tokenDeltas :: Token -> [Delta]
+tokenDeltas (Token d _) = [d]
+tokenDeltas (TokenName d _) = [d]
+tokenDeltas (TokenKeyword d _) = [d]
+tokenDeltas (TokenInteger d _) = [d]
+tokenDeltas (TokenDouble d _) = [d]
+tokenDeltas (TokenString d _) = [d]
+tokenDeltas (TokenChar d _) = [d]
+tokenDeltas (TokenNested _ ds) = catTokenDeltas ds
+tokenDeltas (TokenMismatch  _ _ ds) = catTokenDeltas ds
+tokenDeltas (TokenUnmatchedOpening _) = []
+tokenDeltas (TokenUnmatchedClosing _) = []
+tokenDeltas (TokenLexicalError d _) = [d]
+
+catTokenDeltas :: Cat Token -> [Delta]
+catTokenDeltas cs = case preview _Cons cs of
+  Nothing -> []
+  Just (t, ts) -> tokenDeltas t ++ catTokenDeltas ts
 
 -- The property to target is
 --   allEq . textToLayouts $ txt
@@ -352,14 +458,14 @@ test_layout = testGroup "layout"
   , testCase "F8" $ True @=? (allEq . textToLayouts) exampleF8
   , testCase "F9" $ True @=? (allEq . textToLayouts) exampleF9
   , testCase "F10" $ True @=? (allEq . textToLayouts) exampleF10
-  -- , testCase "F10e" $ Layouts [] @=? Layouts (textToLayouts exampleF10)
   , testCase "E1" $ True @=? (allEq . textToLayouts) exampleE1
-  -- , testCase "E1e" $ Layouts [] @=? Layouts (textToLayouts exampleE1)
   , testCase "E2" $ True @=? (allEq . textToLayouts) exampleE2
-  -- , testCase "E2e" $ Layouts [] @=? Layouts (textToLayouts exampleE2)
   , testCase "E3" $ True @=? (allEq . textToLayouts) exampleE3
-  , testCase "E3e" $ Layouts [] @=? Layouts (textToLayouts exampleE3)
+  -- , testCase "E3e" $ Layouts [] @=? Layouts (textToLayouts exampleE3)
   , testProperty "all eq (no do, no errors)" $ allEq . textToLayouts . modelLinesToText
+  , testProperty "deltas (no do, no errors)" $ (=== Right ()) . checkLayouts . textToLayouts . modelLinesToText
   , testProperty "all eq (with do, no errors)" $ allEq . textToLayouts . modelLinesWithDoToText
+  , testProperty "deltas (with do, no errors)" $ (=== Right ()) . checkLayouts . textToLayouts . modelLinesWithDoToText
   , testProperty "all eq (no do, with errors)" $ allEq . textToLayouts . modelLinesWithErrorsToText
+  , testProperty "deltas (no do, with errors)" $ (=== Right ()) . checkLayouts . textToLayouts . modelLinesWithErrorsToText
   ]

@@ -358,7 +358,7 @@ test-suite lsp-test
 
 test-suite layout-test
   import: aeson, app, base, bifunctors, bytestring, containers, filepath,
-          lens, tagged, text
+          lens, tagged, text, transformers, mtl
   main-is: Main.hs
   type: exitcode-stdio-1.0
   hs-source-dirs: app/layout-test, src/layout-test
