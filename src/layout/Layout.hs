@@ -277,9 +277,9 @@ instance Semigroup Layout where
   -- -- fg h ji/Rij
   V d l m@(Run p ds ts es pr) r@(Rev rr) <> V d' l' m'@(Run p' ds' ts' es' pr') r' =
     case joinAndCompare pr p' of
-      Left _ -> error "boom 8"
+      Left _ -> V (d <> d') l m (rel d (Rev (revCat l') <> Rev (Cat.singleton (Run p' ds' ts' (snocCat es' (LayoutMismatch 0 pr p')) pr')) <> r'))
       Right _ -> case joinAndCompare p p' of
-        Left _ -> error "boom 8"
+        Left _ -> V (d <> d') l m (rel d (Rev (revCat l') <> Rev (Cat.singleton (Run p' ds' ts' (snocCat es' (LayoutMismatch 0 p p')) pr')) <> r'))
     -- --   ab
     --    c
     --      ed/Rde  -- do the relative positions of head ed and h matter? yes

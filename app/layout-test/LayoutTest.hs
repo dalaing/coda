@@ -445,6 +445,50 @@ exampleE3 =
   \two\n\
   \"
 
+class HasModelLines a where
+  modelToText :: a -> Text
+
+instance HasModelLines ModelLines where
+  modelToText = modelLinesToText
+
+instance HasModelLines ModelLinesWithDo where
+  modelToText = modelLinesWithDoToText
+
+instance HasModelLines ModelLinesWithErrors where
+  modelToText = modelLinesWithErrorsToText
+
+testModelAllEq :: HasModelLines a => a -> Property
+testModelAllEq x =
+  let
+    ls = textToLayouts . modelToText $ x
+  in
+    counterexample (show (Layouts ls)) ((=== True) . allEq $ ls)
+
+testAllEq :: ModelLines -> Property
+testAllEq = testModelAllEq
+
+testAllEqWithDo :: ModelLinesWithDo -> Property
+testAllEqWithDo = testModelAllEq
+
+testAllEqWithErrors :: ModelLinesWithErrors -> Property
+testAllEqWithErrors = testModelAllEq
+
+testModelDeltas :: HasModelLines a => a -> Property
+testModelDeltas x =
+  let
+    ls = textToLayouts . modelToText $ x
+  in
+    counterexample (show (Layouts ls)) ((=== Right ()) . checkLayouts $ ls)
+
+testDeltas :: ModelLines -> Property
+testDeltas = testModelDeltas
+
+testDeltasWithDo :: ModelLinesWithDo -> Property
+testDeltasWithDo = testModelDeltas
+
+testDeltasWithErrors :: ModelLinesWithErrors -> Property
+testDeltasWithErrors = testModelDeltas
+
 test_layout :: TestTree
 test_layout = testGroup "layout"
   [
@@ -462,10 +506,10 @@ test_layout = testGroup "layout"
   , testCase "E2" $ True @=? (allEq . textToLayouts) exampleE2
   , testCase "E3" $ True @=? (allEq . textToLayouts) exampleE3
   -- , testCase "E3e" $ Layouts [] @=? Layouts (textToLayouts exampleE3)
-  , testProperty "all eq (no do, no errors)" $ allEq . textToLayouts . modelLinesToText
-  , testProperty "deltas (no do, no errors)" $ (=== Right ()) . checkLayouts . textToLayouts . modelLinesToText
-  , testProperty "all eq (with do, no errors)" $ allEq . textToLayouts . modelLinesWithDoToText
-  , testProperty "deltas (with do, no errors)" $ (=== Right ()) . checkLayouts . textToLayouts . modelLinesWithDoToText
-  , testProperty "all eq (no do, with errors)" $ allEq . textToLayouts . modelLinesWithErrorsToText
-  , testProperty "deltas (no do, with errors)" $ (=== Right ()) . checkLayouts . textToLayouts . modelLinesWithErrorsToText
+  , testProperty "all eq (no do, no errors)" $ testAllEq
+  , testProperty "deltas (no do, no errors)" $ testDeltas
+  , testProperty "all eq (with do, no errors)" $ testAllEqWithDo
+  , testProperty "deltas (with do, no errors)" $ testDeltasWithDo
+  , testProperty "all eq (no do, with errors)" $ testAllEqWithErrors
+  , testProperty "deltas (no do, with errors)" $ testDeltasWithErrors
   ]
