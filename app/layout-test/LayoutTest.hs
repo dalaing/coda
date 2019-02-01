@@ -262,14 +262,11 @@ instance Show ModelLines where
 
 instance Arbitrary ModelLines where
   arbitrary = do
-    n <- choose (0, 10)
+    n <- choose (0, 5)
     xs <- replicateM n arbitrary
     pure $ ModelLines xs
   shrink (ModelLines xs) =
     ModelLines <$> shrinkList (const []) xs
-
-hasTab :: ModelLines -> Bool
-hasTab (ModelLines ls) = any (Text.isInfixOf "\t" . _indent) ls
 
 newtype ModelLinesWithErrors = ModelLinesWithErrors ModelLines
   deriving (Eq, Ord, Semigroup, Monoid)
@@ -280,11 +277,14 @@ modelLinesWithErrorsToText (ModelLinesWithErrors ml) = modelLinesToText ml
 instance Show ModelLinesWithErrors where
   show = Text.unpack . modelLinesWithErrorsToText
 
-addTab :: ModelLines -> Gen ModelLinesWithErrors
+hasTab :: ModelLines -> Bool
+hasTab (ModelLines ls) = any (Text.isInfixOf "\t" . _indent) ls
+
+addTab :: ModelLines -> Gen ModelLines
 addTab (ModelLines ls) = do
   let l1 = length ls
   if l1 == 0
-  then pure $ ModelLinesWithErrors (ModelLines [])
+  then pure $ ModelLines []
   else do
     n <- choose (0, l1 - 1)
     let
@@ -292,10 +292,10 @@ addTab (ModelLines ls) = do
       l2 = Text.length (_indent l)
     m <- choose (0, l2 - 1)
     let ls' = ls & ix n . indent . ix m .~ '\t'
-    pure $ ModelLinesWithErrors (ModelLines ls')
+    pure $ ModelLines ls'
 
 instance Arbitrary ModelLinesWithErrors where
-  arbitrary = arbitrary >>= addTab
+  arbitrary = arbitrary >>= fmap ModelLinesWithErrors . addTab
   shrink (ModelLinesWithErrors ml) =
     ModelLinesWithErrors <$> filter hasTab (shrink ml)
 
@@ -348,19 +348,60 @@ genMLWD s =
     if s <= 1 then genLines else oneof [genLines, genDo, genTwo, genThree]
 
 instance Arbitrary ModelLinesWithDo where
-  arbitrary = sized genMLWD
-  shrink (MLWDLines ml) = []
+  arbitrary =
+    suchThat (sized genMLWD) hasDo
+  shrink (MLWDLines ml) =
+    MLWDLines <$> shrink ml
   shrink (MLWDDo i ml) =
     if hasDo ml then [ml] else [] ++ (MLWDDo i <$> shrink ml)
   shrink (MLWDTwo m1 m2) =
     if hasDo m1 then [m1] else [] ++
     if hasDo m2 then [m2] else [] ++
-    [MLWDTwo n1 n2 | (n1, n2) <- shrink (m1, m2)]
+    if hasDo m1 || hasDo m2 then [MLWDTwo n1 n2 | (n1, n2) <- shrink (m1, m2)] else []
   shrink (MLWDThree m1 m2 m3) =
     if hasDo m1 then [m1] else [] ++
     if hasDo m2 then [m2] else [] ++
     if hasDo m3 then [m3] else [] ++
-    [MLWDThree n1 n2 n3 | (n1, n2, n3) <- shrink (m1, m2, m3)]
+    if hasDo m1 || hasDo m2 || hasDo m3 then [MLWDThree n1 n2 n3 | (n1, n2, n3) <- shrink (m1, m2, m3)] else []
+
+newtype ModelLinesWithDoAndErrors = ModelLinesWithDoAndErrors ModelLinesWithDo
+  deriving (Eq, Ord)
+
+modelLinesWithDoAndErrorsToText :: ModelLinesWithDoAndErrors -> Text
+modelLinesWithDoAndErrorsToText (ModelLinesWithDoAndErrors mlwd) = modelLinesWithDoToText mlwd
+
+instance Show ModelLinesWithDoAndErrors where
+  show = Text.unpack . modelLinesWithDoAndErrorsToText
+
+hasTabWd :: ModelLinesWithDo -> Bool
+hasTabWd (MLWDLines ml) =
+  hasTab ml
+hasTabWd (MLWDDo _ mlwd) =
+  hasTabWd mlwd
+hasTabWd (MLWDTwo m1 m2) =
+  hasTabWd m1 || hasTabWd m2
+hasTabWd (MLWDThree m1 m2 m3) =
+  hasTabWd m1 || hasTabWd m2 || hasTabWd m3
+
+addTabWd :: ModelLinesWithDo -> Gen ModelLinesWithDo
+addTabWd (MLWDLines ml) =
+  MLWDLines <$> addTab ml
+addTabWd (MLWDDo i mlwd) =
+  MLWDDo i <$> addTabWd mlwd
+addTabWd (MLWDTwo m1 m2) =
+  oneof [ MLWDTwo <$> addTabWd m1 <*> pure m2
+        , MLWDTwo <$> pure m1 <*> addTabWd m2
+        ]
+addTabWd (MLWDThree m1 m2 m3) =
+  oneof [ MLWDThree <$> addTabWd m1 <*> pure m2 <*> pure m3
+        , MLWDThree <$> pure m1 <*> addTabWd m2 <*> pure m3
+        , MLWDThree <$> pure m1 <*> pure m2 <*> addTabWd m3
+        ]
+
+instance Arbitrary ModelLinesWithDoAndErrors where
+  arbitrary = arbitrary >>= fmap ModelLinesWithDoAndErrors . addTabWd
+  shrink (ModelLinesWithDoAndErrors mlwd) =
+    ModelLinesWithDoAndErrors <$> filter hasTabWd (shrink mlwd)
 
 exampleF1 :: Text
 exampleF1 =
@@ -488,23 +529,25 @@ assertAllEq t =
 test_layout :: TestTree
 test_layout = testGroup "layout"
   [
-    testCase "F1" $ assertAllEq exampleF1
-  , testCase "F2" $ assertAllEq exampleF2
-  , testCase "F3" $ assertAllEq exampleF3
-  , testCase "F4" $ assertAllEq exampleF4
-  , testCase "F5" $ assertAllEq exampleF5
-  , testCase "F6" $ assertAllEq exampleF6
-  , testCase "F7" $ assertAllEq exampleF7
-  , testCase "F8" $ assertAllEq exampleF8
-  , testCase "F9" $ assertAllEq exampleF9
+    testCase "F1"  $ assertAllEq exampleF1
+  , testCase "F2"  $ assertAllEq exampleF2
+  , testCase "F3"  $ assertAllEq exampleF3
+  , testCase "F4"  $ assertAllEq exampleF4
+  , testCase "F5"  $ assertAllEq exampleF5
+  , testCase "F6"  $ assertAllEq exampleF6
+  , testCase "F7"  $ assertAllEq exampleF7
+  , testCase "F8"  $ assertAllEq exampleF8
+  , testCase "F9"  $ assertAllEq exampleF9
   , testCase "F10" $ assertAllEq exampleF10
-  , testCase "E1" $ assertAllEq exampleE1
-  , testCase "E2" $ assertAllEq exampleE2
-  , testCase "E3" $ assertAllEq exampleE3
+  , testCase "E1"  $ assertAllEq exampleE1
+  , testCase "E2"  $ assertAllEq exampleE2
+  , testCase "E3"  $ assertAllEq exampleE3
   , testProperty "all eq (no do, no errors)" $ testAllEq . modelLinesToText
   , testProperty "deltas (no do, no errors)" $ testDeltas . modelLinesToText
   , testProperty "all eq (with do, no errors)" $ testAllEq . modelLinesWithDoToText
   , testProperty "deltas (with do, no errors)" $ testDeltas . modelLinesWithDoToText
   , testProperty "all eq (no do, with errors)" $ testAllEq . modelLinesWithErrorsToText
   , testProperty "deltas (no do, with errors)" $ testDeltas . modelLinesWithErrorsToText
+  , testProperty "all eq (with do, with errors)" $ testAllEq . modelLinesWithDoAndErrorsToText
+  , testProperty "deltas (with do, with errors)" $ testDeltas . modelLinesWithDoAndErrorsToText
   ]
