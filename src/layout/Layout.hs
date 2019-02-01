@@ -113,7 +113,8 @@ shuffle d m l' m' r' =
 
 -- will this ever need to deal with EQ?
 shuffle' :: Delta -> Run -> Cat Run -> Maybe Run -> Cat Run -> (Run, Cat Run, Maybe Run, Cat Run)
-shuffle' d m@(Run p _ ts Empty pr) l' m' r' =
+-- shuffle' d m@(Run p _ ts Empty pr) l' m' r' =
+shuffle' d m@(Run p _ ts _ pr) l' m' r' =
   case preview _Cons l' of
     Just (lh'@(Run p' _ _ es' pr'), lt') ->
       case joinAndCompare p p' of
@@ -131,8 +132,8 @@ shuffle' d m@(Run p _ ts Empty pr) l' m' r' =
               Right LT | boring ts && Cat.null es' -> shuffle' d (runMerge d m rh') l' Nothing rt'
               otherwise -> (m, l', m', r')
           Nothing -> (m, l', m', r')
-shuffle' d m@(Run p _ ts _ pr) l' m' r' =
-  (m, l', m', r')
+-- shuffle' d m@(Run p _ ts _ pr) l' m' r' =
+  -- (m, l', m', r')
 
 -- do we ever have to consider whether the tokens on the RHS of the join are boring or not?
 --
@@ -153,7 +154,7 @@ instance Semigroup Layout where
   E d <> V d' l m r = V (d <> d') (rel d l) (rel d m) (rel d r)
   S d m <> E d' = S (d <> d') m
   S d m@(Run p _ ts _ pr) <> S d' m'@(Run p' _ _ _ pr') =
-    case joinAndCompare p p' of
+    case joinAndCompare pr p' >> joinAndCompare p p' of
       Left _ ->
         V (d <> d') Empty m (Rev . Cat.singleton . rel d $ runSnocMismatch (LayoutMismatch 0 pr p') m')
       --        m
@@ -162,9 +163,7 @@ instance Semigroup Layout where
       -- m'      m'
       Right LT
         | boring ts ->
-            case joinAndCompare pr p' of
-              Left _ -> V (d <> d') Empty m (Rev . Cat.singleton . rel d $ runSnocMismatch (LayoutMismatch 0 pr p') m')
-              Right _ -> S (d <> d') (runMerge d m m')
+          S (d <> d') (runMerge d m m')
         | otherwise ->
           V (d <> d') Empty m (Rev (Cat.singleton (rel d m')))
       --        m
@@ -277,7 +276,11 @@ instance Semigroup Layout where
       Nothing ->
         case joinAndCompare p p' of
           Left _ ->
-            V (d <> d') l m (Rev (Cat.singleton (rel d (runSnocMismatch (LayoutMismatch 0 pr p') m'))))
+            case joinAndCompare pr p' of
+              Right LT | boring ts ->
+                V (d <> d') l (runMerge d m m') Empty
+              otherwise ->
+                V (d <> d') l m (Rev (Cat.singleton (rel d (runSnocMismatch (LayoutMismatch 0 pr p') m'))))
           Right LT
             --  l
             -- m
@@ -307,9 +310,21 @@ instance Semigroup Layout where
       Just (rt, rh@(Run p'' ds'' ts'' es'' pr'')) ->
         case (joinAndCompare p p', joinAndCompare p'' p') of
           (Left _, _) ->
-            V (d <> d') l m (r <> Rev (Cat.singleton (rel d (runSnocMismatch (LayoutMismatch 0 pr'' p') m'))))
+            case joinAndCompare pr p' of
+              Right LT | boring ts ->
+                V (d <> d') l m (rt <> (Rev (Cat.singleton (runMerge d rh m'))))
+              Right _ ->
+                V (d <> d') l m (r <> Rev (Cat.singleton (rel d m')))
+              otherwise ->
+                V (d <> d') l m (r <> Rev (Cat.singleton (rel d (runSnocMismatch (LayoutMismatch 0 pr'' p') m'))))
           (_, Left _) ->
-            V (d <> d') l m (r <> Rev (Cat.singleton (rel d (runSnocMismatch (LayoutMismatch 0 pr'' p') m'))))
+            case joinAndCompare pr p' of
+              Right LT | boring ts ->
+                V (d <> d') l m (rt <> (Rev (Cat.singleton (runMerge d rh m'))))
+              Right _ ->
+                V (d <> d') l m (r <> Rev (Cat.singleton (rel d m')))
+              otherwise ->
+                V (d <> d') l m (r <> Rev (Cat.singleton (rel d (runSnocMismatch (LayoutMismatch 0 pr'' p') m'))))
           (Right LT, Right o)
             --  l
             -- m
