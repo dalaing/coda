@@ -524,6 +524,35 @@ exampleE6 =
   \\t   three\n\
   \"
 
+exampleE7 :: Text
+exampleE7 =
+  "\t     one\n\
+  \    two\n\
+  \  three\n\
+  \"
+
+exampleE8 :: Text
+exampleE8 =
+  "      one\n\
+  \\t   two\n\
+  \  three\n\
+  \"
+
+exampleE9 :: Text
+exampleE9 =
+  "      one\n\
+  \    two\n\
+  \\t three\n\
+  \"
+
+exampleE10 :: Text
+exampleE10 =
+  "\tone\n\
+  \  two\n\
+  \    three\n\
+  \  four\n\
+  \"
+
 testAllEq :: Text -> Property
 testAllEq x =
   let
@@ -566,6 +595,10 @@ test_layout = testGroup "layout"
   , testCase "E4"  $ assertAllEq exampleE4
   , testCase "E5"  $ assertAllEq exampleE5
   , testCase "E6"  $ assertAllEq exampleE6
+  , testCase "E7"  $ assertAllEq exampleE7
+  , testCase "E8"  $ assertAllEq exampleE8
+  , testCase "E9"  $ assertAllEq exampleE9
+  , testCase "E10"  $ assertAllEq exampleE10
   , testProperty "all eq (no do, no errors)" $ testAllEq . modelLinesToText
   , testProperty "deltas (no do, no errors)" $ testDeltas . modelLinesToText
   , testProperty "all eq (with do, no errors)" $ testAllEq . modelLinesWithDoToText
