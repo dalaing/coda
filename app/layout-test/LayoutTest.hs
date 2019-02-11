@@ -553,6 +553,14 @@ exampleE10 =
   \  four\n\
   \"
 
+exampleE11 :: Text
+exampleE11 =
+  "    \tone\n\
+  \  two\n\
+  \      three\n\
+  \    four\n\
+  \"
+
 testAllEq :: Text -> Property
 testAllEq x =
   let
@@ -579,32 +587,33 @@ assertAllEq t =
 test_layout :: TestTree
 test_layout = testGroup "layout"
   [
-    testCase "F1"  $ assertAllEq exampleF1
-  , testCase "F2"  $ assertAllEq exampleF2
-  , testCase "F3"  $ assertAllEq exampleF3
-  , testCase "F4"  $ assertAllEq exampleF4
-  , testCase "F5"  $ assertAllEq exampleF5
-  , testCase "F6"  $ assertAllEq exampleF6
-  , testCase "F7"  $ assertAllEq exampleF7
-  , testCase "F8"  $ assertAllEq exampleF8
-  , testCase "F9"  $ assertAllEq exampleF9
-  , testCase "F10" $ assertAllEq exampleF10
-  , testCase "E1"  $ assertAllEq exampleE1
-  , testCase "E2"  $ assertAllEq exampleE2
-  , testCase "E3"  $ assertAllEq exampleE3
-  , testCase "E4"  $ assertAllEq exampleE4
-  , testCase "E5"  $ assertAllEq exampleE5
-  , testCase "E6"  $ assertAllEq exampleE6
-  , testCase "E7"  $ assertAllEq exampleE7
-  , testCase "E8"  $ assertAllEq exampleE8
-  , testCase "E9"  $ assertAllEq exampleE9
-  , testCase "E10"  $ assertAllEq exampleE10
-  , testProperty "all eq (no do, no errors)" $ testAllEq . modelLinesToText
-  , testProperty "deltas (no do, no errors)" $ testDeltas . modelLinesToText
-  , testProperty "all eq (with do, no errors)" $ testAllEq . modelLinesWithDoToText
-  , testProperty "deltas (with do, no errors)" $ testDeltas . modelLinesWithDoToText
-  , testProperty "all eq (no do, with errors)" $ testAllEq . modelLinesWithErrorsToText
-  , testProperty "deltas (no do, with errors)" $ testDeltas . modelLinesWithErrorsToText
+  --   testCase "F1"  $ assertAllEq exampleF1
+  -- , testCase "F2"  $ assertAllEq exampleF2
+  -- , testCase "F3"  $ assertAllEq exampleF3
+  -- , testCase "F4"  $ assertAllEq exampleF4
+  -- , testCase "F5"  $ assertAllEq exampleF5
+  -- , testCase "F6"  $ assertAllEq exampleF6
+  -- , testCase "F7"  $ assertAllEq exampleF7
+  -- , testCase "F8"  $ assertAllEq exampleF8
+  -- , testCase "F9"  $ assertAllEq exampleF9
+  -- , testCase "F10" $ assertAllEq exampleF10
+  -- , testCase "E1"  $ assertAllEq exampleE1
+  -- , testCase "E2"  $ assertAllEq exampleE2
+  -- , testCase "E3"  $ assertAllEq exampleE3
+  -- , testCase "E4"  $ assertAllEq exampleE4
+  -- , testCase "E5"  $ assertAllEq exampleE5
+  -- , testCase "E6"  $ assertAllEq exampleE6
+  -- , testCase "E7"  $ assertAllEq exampleE7
+  -- , testCase "E8"  $ assertAllEq exampleE8
+  -- , testCase "E9"  $ assertAllEq exampleE9
+  -- , testCase "E10"  $ assertAllEq exampleE10
+  -- , testCase "E11"  $ assertAllEq exampleE11
+  -- ,  testProperty "all eq (no do, no errors)" $ testAllEq . modelLinesToText
+  -- , testProperty "deltas (no do, no errors)" $ testDeltas . modelLinesToText
+  -- , testProperty "all eq (with do, no errors)" $ testAllEq . modelLinesWithDoToText
+  -- , testProperty "deltas (with do, no errors)" $ testDeltas . modelLinesWithDoToText
+  testProperty "all eq (no do, with errors)" $ testAllEq . modelLinesWithErrorsToText
+  -- , testProperty "deltas (no do, with errors)" $ testDeltas . modelLinesWithErrorsToText
   -- , testProperty "all eq (with do, with errors)" $ testAllEq . modelLinesWithDoAndErrorsToText
-  , testProperty "deltas (with do, with errors)" $ testDeltas . modelLinesWithDoAndErrorsToText
+  -- , testProperty "deltas (with do, with errors)" $ testDeltas . modelLinesWithDoAndErrorsToText
   ]
