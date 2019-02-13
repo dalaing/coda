@@ -332,7 +332,12 @@ instance Semigroup Layout where
                   -- V (d <> d') (l <> Cat.singleton m <> revCat (runRev r)) (rel d m') Empty
                   V (d <> d') l m (r <> Rev (Cat.singleton (rel d m')))
               otherwise ->
-                trace "    _" $ V (d <> d') l m (r <> Rev (Cat.singleton (rel d (runSnocMismatch (LayoutMismatch 0 pr'' p') m'))))
+                trace "    _" $
+                  case preview _Cons l of
+                    Nothing ->
+                      V (d <> d') Empty m (r <> Rev (Cat.singleton (rel d (runSnocMismatch (LayoutMismatch 0 pr'' p') m'))))
+                    Just (lh, lt) ->
+                      V (d <> d') l m (r <> Rev (Cat.singleton (rel d (runSnocMismatch (LayoutMismatch 0 pr'' p') m'))))
           (_, Left _) ->
             trace "  _/Left _" $ case joinAndCompare pr'' p' of
               Right LT | boring ts ->
@@ -345,7 +350,12 @@ instance Semigroup Layout where
                 trace "    Right _" $
                   V (d <> d') l m (r <> Rev (Cat.singleton (rel d m')))
               otherwise ->
-                trace "    _" $ V (d <> d') l m (r <> Rev (Cat.singleton (rel d (runSnocMismatch (LayoutMismatch 0 pr'' p') m'))))
+                trace "    _" $
+                  case preview _Cons l of
+                    Nothing ->
+                      V (d <> d') Empty m (r <> Rev (Cat.singleton (rel d (runSnocMismatch (LayoutMismatch 0 pr'' p') m'))))
+                    Just (lh, lt) ->
+                      V (d <> d') l m (r <> Rev (Cat.singleton (rel d (runSnocMismatch (LayoutMismatch 0 pr'' p') m'))))
           (Right LT, Right o)
             --  l
             -- m
@@ -520,6 +530,7 @@ instance Semigroup Layout where
                   Right EQ ->
                     trace "    Right EQ" $
                     V (d <> d') l m (r <> rel d (Rev (Cat.singleton (runSnocMismatch (LayoutMismatch 0 pr'' p''') lh')) <> Rev (revCat lt') <> Rev (Cat.singleton m') <> r'))
+                    -- V (d <> d') l m (r <> rel d (Rev (Cat.singleton lh') <> Rev (revCat lt') <> Rev (Cat.singleton m') <> r'))
                   Right GT ->
                     trace "    Right GT" $
                     V (d <> d') l m (r <> rel d (Rev (Cat.singleton (runSnocMismatch (LayoutMismatch 0 pr'' p''') lh')) <> Rev (revCat lt') <> Rev (Cat.singleton m') <> r'))

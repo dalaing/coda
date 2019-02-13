@@ -42,6 +42,8 @@ import qualified Syntax.Lexer as Lex
 import Syntax.Layout
 import qualified Syntax.Parser as Parse
 
+import Debug.Trace
+
 linesToLayouts :: Delta -> [Text] -> (Delta, [Layout])
 linesToLayouts d0 ls =
   let
@@ -69,9 +71,9 @@ textToLayouts t =
         (d, ls1) = linesToLayouts 0 x
         (_, ls2) = linesToLayouts d y
       in
-        fold ls1 <> fold ls2
+        (trace "=== L ===" (fold ls1)) <> (trace "=== R ===" (fold ls2))
   in
-    fmap f [1..length ts - 1]
+    trace "=========" $ fmap f [1..length ts - 1]
 
 allEq :: Eq a => [a] -> Bool
 allEq xs =
@@ -555,9 +557,9 @@ exampleE10 =
 
 exampleE11 :: Text
 exampleE11 =
-  "    \tone\n\
-  \  two\n\
-  \      three\n\
+  "      one\n\
+  \\t two\n\
+  \    three\n\
   \    four\n\
   \"
 
@@ -607,12 +609,12 @@ test_layout = testGroup "layout"
   -- , testCase "E8"  $ assertAllEq exampleE8
   -- , testCase "E9"  $ assertAllEq exampleE9
   -- , testCase "E10"  $ assertAllEq exampleE10
-  -- , testCase "E11"  $ assertAllEq exampleE11
-  -- ,  testProperty "all eq (no do, no errors)" $ testAllEq . modelLinesToText
+   testCase "E11"  $ assertAllEq exampleE11
+  -- , testProperty "all eq (no do, no errors)" $ testAllEq . modelLinesToText
   -- , testProperty "deltas (no do, no errors)" $ testDeltas . modelLinesToText
   -- , testProperty "all eq (with do, no errors)" $ testAllEq . modelLinesWithDoToText
   -- , testProperty "deltas (with do, no errors)" $ testDeltas . modelLinesWithDoToText
-  testProperty "all eq (no do, with errors)" $ testAllEq . modelLinesWithErrorsToText
+  -- , testProperty "all eq (no do, with errors)" $ testAllEq . modelLinesWithErrorsToText
   -- , testProperty "deltas (no do, with errors)" $ testDeltas . modelLinesWithErrorsToText
   -- , testProperty "all eq (with do, with errors)" $ testAllEq . modelLinesWithDoAndErrorsToText
   -- , testProperty "deltas (with do, with errors)" $ testDeltas . modelLinesWithDoAndErrorsToText
