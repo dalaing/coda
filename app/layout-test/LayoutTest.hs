@@ -35,6 +35,7 @@ import Syntax.Dyck
 import Syntax.Rope
 import Relative.Class
 import Relative.Cat hiding (null)
+import qualified Relative.Cat as Cat
 import Relative.Delta
 import Rev
 import Language.Server.Protocol (Position(..))
@@ -43,6 +44,14 @@ import Syntax.Layout
 import qualified Syntax.Parser as Parse
 
 import Debug.Trace
+
+mkRun :: Text -> Run
+mkRun txt =
+  let
+    p = fromText txt
+    t = Lex.lex txt
+  in
+    Run p (Cat.singleton t) t Empty p
 
 linesToLayouts :: Delta -> [Text] -> (Delta, [Layout])
 linesToLayouts d0 ls =
@@ -73,7 +82,7 @@ textToLayouts t =
       in
         (trace "=== L ===" (fold ls1)) <> (trace "=== R ===" (fold ls2))
   in
-    trace "=========" $ fmap f [1..length ts - 1]
+    trace "=========" $ fmap f [0..length ts - 1]
 
 allEq :: Eq a => [a] -> Bool
 allEq xs =
@@ -563,6 +572,496 @@ exampleE11 =
   \    four\n\
   \"
 
+test_layout_example :: TestTree
+test_layout_example =
+  testGroup "example" [
+    testGroup "one" [
+      testCase "I1E0"  $ assertAllEqTo exampleI1E0 resultI1E0
+    , testCase "I1E1"  $ assertAllEqTo exampleI1E1 resultI1E1
+    ]
+  , testGroup "two" [
+      testCase "I11E00"  $ assertAllEqTo exampleI11E00 resultI11E00
+    , testCase "I11E01"  $ assertAllEqTo exampleI11E01 resultI11E01
+    , testCase "I11E10"  $ assertAllEqTo exampleI11E10 resultI11E10
+    , testCase "I11E11"  $ assertAllEqTo exampleI11E11 resultI11E11
+    , testCase "I12E00"  $ assertAllEqTo exampleI12E00 resultI12E00
+    , testCase "I12E01"  $ assertAllEqTo exampleI12E01 resultI12E01
+    , testCase "I12E02"  $ assertAllEqTo exampleI12E02 resultI12E02
+    , testCase "I12E10"  $ assertAllEqTo exampleI12E10 resultI12E10
+    , testCase "I12E11"  $ assertAllEqTo exampleI12E11 resultI12E11
+    , testCase "I12E12"  $ assertAllEqTo exampleI12E12 resultI12E12
+    , testCase "I21E00"  $ assertAllEqTo exampleI21E00 resultI21E00
+    , testCase "I21E01"  $ assertAllEqTo exampleI21E01 resultI21E01
+    , testCase "I21E10"  $ assertAllEqTo exampleI21E10 resultI21E10
+    , testCase "I21E11"  $ assertAllEqTo exampleI21E11 resultI21E11
+    , testCase "I21E20"  $ assertAllEqTo exampleI21E20 resultI21E20
+    , testCase "I21E21"  $ assertAllEqTo exampleI21E21 resultI21E21
+    , testCase "I22E00"  $ assertAllEqTo exampleI22E00 resultI22E00
+    , testCase "I22E01"  $ assertAllEqTo exampleI22E01 resultI22E01
+    , testCase "I22E02"  $ assertAllEqTo exampleI22E02 resultI22E02
+    , testCase "I22E10"  $ assertAllEqTo exampleI22E10 resultI22E10
+    , testCase "I22E11"  $ assertAllEqTo exampleI22E11 resultI22E11
+    , testCase "I22E12"  $ assertAllEqTo exampleI22E12 resultI22E12
+    , testCase "I22E20"  $ assertAllEqTo exampleI22E20 resultI22E20
+    , testCase "I22E21"  $ assertAllEqTo exampleI22E21 resultI22E21
+    , testCase "I22E22"  $ assertAllEqTo exampleI22E22 resultI22E22
+    ]
+  ]
+
+-- one
+
+exampleI1E0 :: Text
+exampleI1E0 =
+  "   one\n\
+  \"
+
+resultI1E0 :: Layout
+resultI1E0 =
+  S 6 $ mkRun "   one"
+
+exampleI1E1 :: Text
+exampleI1E1 =
+  " \t one\n\
+  \"
+
+resultI1E1 :: Layout
+resultI1E1 =
+  S 6 $ mkRun " \t one"
+
+-- two
+
+exampleI11E00 :: Text
+exampleI11E00 =
+  "   one\n\
+  \   two\n\
+  \"
+
+resultI11E00 :: Layout
+resultI11E00 =
+  V 13
+    Empty
+    (mkRun "   one")
+    (rel 7 . Rev . Cat.singleton . mkRun $ "   two")
+
+exampleI11E01 :: Text
+exampleI11E01 =
+  "   one\n\
+  \ \t two\n\
+  \"
+
+resultI11E01 :: Layout
+resultI11E01 =
+  E 0
+
+exampleI11E10 :: Text
+exampleI11E10 =
+  " \t one\n\
+  \   two\n\
+  \"
+
+resultI11E10 :: Layout
+resultI11E10 =
+  E 0
+
+exampleI11E11 :: Text
+exampleI11E11 =
+  " \t one\n\
+  \ \t two\n\
+  \"
+
+resultI11E11 :: Layout
+resultI11E11 =
+  E 0
+
+exampleI12E00 :: Text
+exampleI12E00 =
+  "   one\n\
+  \      two\n\
+  \"
+
+resultI12E00 :: Layout
+resultI12E00 =
+  E 0
+
+exampleI12E01 :: Text
+exampleI12E01 =
+  "   one\n\
+  \ \t    two\n\
+  \"
+
+resultI12E01 :: Layout
+resultI12E01 =
+  E 0
+
+exampleI12E02 :: Text
+exampleI12E02 =
+  "   one\n\
+  \    \t two\n\
+  \"
+
+resultI12E02 :: Layout
+resultI12E02 =
+  E 0
+
+exampleI12E10 :: Text
+exampleI12E10 =
+  " \t one\n\
+  \      two\n\
+  \"
+
+resultI12E10 :: Layout
+resultI12E10 =
+  E 0
+
+exampleI12E11 :: Text
+exampleI12E11 =
+  " \t one\n\
+  \ \t    two\n\
+  \"
+
+resultI12E11 :: Layout
+resultI12E11 =
+  E 0
+
+exampleI12E12 :: Text
+exampleI12E12 =
+  " \t one\n\
+  \    \t two\n\
+  \"
+
+resultI12E12 :: Layout
+resultI12E12 =
+  E 0
+
+exampleI21E00 :: Text
+exampleI21E00 =
+  "      one\n\
+  \   two\n\
+  \"
+
+resultI21E00 :: Layout
+resultI21E00 =
+  E 0
+
+exampleI21E01 :: Text
+exampleI21E01 =
+  "      one\n\
+  \ \t two\n\
+  \"
+
+resultI21E01 :: Layout
+resultI21E01 =
+  E 0
+
+exampleI21E10 :: Text
+exampleI21E10 =
+  " \t    one\n\
+  \   two\n\
+  \"
+
+resultI21E10 :: Layout
+resultI21E10 =
+  E 0
+
+exampleI21E11 :: Text
+exampleI21E11 =
+  " \t    one\n\
+  \ \t two\n\
+  \"
+
+resultI21E11 :: Layout
+resultI21E11 =
+  E 0
+
+exampleI21E20 :: Text
+exampleI21E20 =
+  "    \t one\n\
+  \   two\n\
+  \"
+
+resultI21E20 :: Layout
+resultI21E20 =
+  E 0
+
+exampleI21E21 :: Text
+exampleI21E21 =
+  "    \t one\n\
+  \ \t two\n\
+  \"
+
+resultI21E21 :: Layout
+resultI21E21 =
+  E 0
+
+exampleI22E00 :: Text
+exampleI22E00 =
+  "      one\n\
+  \      two\n\
+  \"
+
+resultI22E00 :: Layout
+resultI22E00 =
+  E 0
+
+exampleI22E01 :: Text
+exampleI22E01 =
+  "      one\n\
+  \ \t    two\n\
+  \"
+
+resultI22E01 :: Layout
+resultI22E01 =
+  E 0
+
+exampleI22E02 :: Text
+exampleI22E02 =
+  "      one\n\
+  \    \t two\n\
+  \"
+
+resultI22E02 :: Layout
+resultI22E02 =
+  E 0
+
+exampleI22E10 :: Text
+exampleI22E10 =
+  " \t    one\n\
+  \      two\n\
+  \"
+
+resultI22E10 :: Layout
+resultI22E10 =
+  E 0
+
+exampleI22E11 :: Text
+exampleI22E11 =
+  " \t    one\n\
+  \ \t    two\n\
+  \"
+
+resultI22E11 :: Layout
+resultI22E11 =
+  V 19
+    Empty
+    (mkRun " \t    one")
+    (rel 10 . Rev . Cat.singleton $ mkRun " \t    two")
+
+exampleI22E12 :: Text
+exampleI22E12 =
+  " \t    one\n\
+  \    \t two\n\
+  \"
+
+resultI22E12 :: Layout
+resultI22E12 =
+  V 19
+    Empty
+    (mkRun " \t    one")
+    (rel 10 . Rev . Cat.singleton . runSnocMismatch (LayoutMismatch 0 " \t    " "    \t ") $ mkRun "    \t two")
+
+exampleI22E20 :: Text
+exampleI22E20 =
+  "    \t one\n\
+  \      two\n\
+  \"
+
+resultI22E20 :: Layout
+resultI22E20 =
+  V 19
+    Empty
+    (mkRun "    \t one")
+    (rel 10 . Rev . Cat.singleton . runSnocMismatch (LayoutMismatch 0 "    \t " "      ") $ mkRun "      two")
+
+exampleI22E21 :: Text
+exampleI22E21 =
+  "    \t one\n\
+  \ \t    two\n\
+  \"
+
+resultI22E21 :: Layout
+resultI22E21 =
+  V 19
+    Empty
+    (mkRun "    \t one")
+    (rel 10 . Rev . Cat.singleton . runSnocMismatch (LayoutMismatch 0 "    \t " " \t    ") $ mkRun " \t    two")
+
+exampleI22E22 :: Text
+exampleI22E22 =
+  "    \t one\n\
+  \    \t two\n\
+  \"
+
+resultI22E22 :: Layout
+resultI22E22 =
+  V 19
+    Empty
+    (mkRun "    \t one")
+    (rel 10 . Rev . Cat.singleton $ mkRun "    \t two")
+
+{-
+-- three
+
+-- test_layout_example_three :: TestTree
+-- test_layout_example_three =
+  testGroup "three" [
+    testCase "I111E000"  $ assertAllEqTo exampleI111E000 resultI111E000
+  , testCase "I111E001"  $ assertAllEqTo exampleI111E001 resultI111E001
+  , testCase "I111E010"  $ assertAllEqTo exampleI111E010 resultI111E010
+  , testCase "I111E011"  $ assertAllEqTo exampleI111E011 resultI111E011
+  , testCase "I111E100"  $ assertAllEqTo exampleI111E100 resultI111E100
+  , testCase "I111E101"  $ assertAllEqTo exampleI111E101 resultI111E101
+  , testCase "I111E110"  $ assertAllEqTo exampleI111E110 resultI111E110
+  , testCase "I111E111"  $ assertAllEqTo exampleI111E111 resultI111E111
+  , testCase "I112E000"  $ assertAllEqTo exampleI112E000 resultI112E000
+  , testCase "I112E001"  $ assertAllEqTo exampleI112E001 resultI112E001
+  , testCase "I112E002"  $ assertAllEqTo exampleI112E002 resultI112E002
+  , testCase "I112E010"  $ assertAllEqTo exampleI112E010 resultI112E010
+  , testCase "I112E011"  $ assertAllEqTo exampleI112E011 resultI112E011
+  , testCase "I112E012"  $ assertAllEqTo exampleI112E012 resultI112E012
+  , testCase "I112E100"  $ assertAllEqTo exampleI112E100 resultI112E100
+  , testCase "I112E101"  $ assertAllEqTo exampleI112E101 resultI112E101
+  , testCase "I112E102"  $ assertAllEqTo exampleI112E102 resultI112E102
+  , testCase "I112E110"  $ assertAllEqTo exampleI112E110 resultI112E110
+  , testCase "I112E111"  $ assertAllEqTo exampleI112E111 resultI112E111
+  , testCase "I112E112"  $ assertAllEqTo exampleI112E112 resultI112E112
+  , testCase "I113E000"  $ assertAllEqTo exampleI113E000 resultI113E000
+  , testCase "I113E001"  $ assertAllEqTo exampleI113E001 resultI113E001
+  , testCase "I113E002"  $ assertAllEqTo exampleI113E002 resultI113E002
+  , testCase "I113E003"  $ assertAllEqTo exampleI113E003 resultI113E003
+  , testCase "I113E010"  $ assertAllEqTo exampleI113E010 resultI113E010
+  , testCase "I113E011"  $ assertAllEqTo exampleI113E011 resultI113E011
+  , testCase "I113E012"  $ assertAllEqTo exampleI113E012 resultI113E012
+  , testCase "I113E013"  $ assertAllEqTo exampleI113E013 resultI113E013
+  , testCase "I113E100"  $ assertAllEqTo exampleI113E100 resultI113E100
+  , testCase "I113E101"  $ assertAllEqTo exampleI113E101 resultI113E101
+  , testCase "I113E102"  $ assertAllEqTo exampleI113E102 resultI113E102
+  , testCase "I113E103"  $ assertAllEqTo exampleI113E103 resultI113E103
+  , testCase "I113E110"  $ assertAllEqTo exampleI113E110 resultI113E110
+  , testCase "I113E111"  $ assertAllEqTo exampleI113E111 resultI113E111
+  , testCase "I113E112"  $ assertAllEqTo exampleI113E112 resultI113E112
+  , testCase "I113E113"  $ assertAllEqTo exampleI113E113 resultI113E113
+  ]
+
+exampleI111E000 :: Text
+exampleI111E000 =
+  "   one\n\
+  \   two\n\
+  \   three\n\
+  \"
+
+exampleI111E001 :: Text
+exampleI111E001 =
+  "   one\n\
+  \   two\n\
+  \ \t three\n\
+  \"
+
+exampleI111E010 :: Text
+exampleI111E010 =
+  "   one\n\
+  \ \t two\n\
+  \   three\n\
+  \"
+
+exampleI111E011 :: Text
+exampleI111E011 =
+  "   one\n\
+  \ \t two\n\
+  \ \t three\n\
+  \"
+
+exampleI111E100 :: Text
+exampleI111E100 =
+  " \t one\n\
+  \   two\n\
+  \   three\n\
+  \"
+
+exampleI111E101 :: Text
+exampleI111E101 =
+  " \t one\n\
+  \   two\n\
+  \ \t three\n\
+  \"
+
+exampleI111E110 :: Text
+exampleI111E110 =
+  " \t one\n\
+  \ \t two\n\
+  \   three\n\
+  \"
+
+exampleI111E111 :: Text
+exampleI111E111 =
+  " \t one\n\
+  \ \t two\n\
+  \ \t three\n\
+  \"
+
+exampleI112E000 :: Text
+exampleI112E001 :: Text
+exampleI112E002 :: Text
+exampleI112E010 :: Text
+exampleI112E011 :: Text
+exampleI112E012 :: Text
+exampleI112E100 :: Text
+exampleI112E101 :: Text
+exampleI112E102 :: Text
+exampleI112E110 :: Text
+exampleI112E111 :: Text
+exampleI112E112 :: Text
+
+exampleI113E000 :: Text
+exampleI113E001 :: Text
+exampleI113E002 :: Text
+exampleI113E003 :: Text
+exampleI113E010 :: Text
+exampleI113E011 :: Text
+exampleI113E012 :: Text
+exampleI113E013 :: Text
+exampleI113E100 :: Text
+exampleI113E101 :: Text
+exampleI113E102 :: Text
+exampleI113E103 :: Text
+exampleI113E110 :: Text
+exampleI113E111 :: Text
+exampleI113E112 :: Text
+exampleI113E113 :: Text
+
+exampleI121E000 :: Text
+exampleI121E001 :: Text
+exampleI121E010 :: Text
+exampleI121E011 :: Text
+exampleI121E020 :: Text
+exampleI121E021 :: Text
+exampleI121E100 :: Text
+exampleI121E101 :: Text
+exampleI121E110 :: Text
+exampleI121E111 :: Text
+exampleI121E120 :: Text
+exampleI121E121 :: Text
+
+exampleI122E000 :: Text
+exampleI122E001 :: Text
+exampleI122E002 :: Text
+exampleI122E010 :: Text
+exampleI122E011 :: Text
+exampleI122E012 :: Text
+exampleI122E020 :: Text
+exampleI122E021 :: Text
+exampleI122E022 :: Text
+exampleI122E100 :: Text
+exampleI122E101 :: Text
+exampleI122E102 :: Text
+exampleI122E110 :: Text
+exampleI122E111 :: Text
+exampleI122E112 :: Text
+exampleI122E120 :: Text
+exampleI122E121 :: Text
+exampleI122E122 :: Text
+
+-}
+
 testAllEq :: Text -> Property
 testAllEq x =
   let
@@ -581,6 +1080,15 @@ assertAllEq :: Text -> Assertion
 assertAllEq t =
   let
     ls = textToLayouts t
+  in
+    if allEq ls
+    then pure ()
+    else assertFailure (show (Layouts ls))
+
+assertAllEqTo :: Text -> Layout -> Assertion
+assertAllEqTo t l =
+  let
+    ls = l : textToLayouts t
   in
     if allEq ls
     then pure ()
@@ -609,7 +1117,7 @@ test_layout = testGroup "layout"
   -- , testCase "E8"  $ assertAllEq exampleE8
   -- , testCase "E9"  $ assertAllEq exampleE9
   -- , testCase "E10"  $ assertAllEq exampleE10
-   testCase "E11"  $ assertAllEq exampleE11
+  -- ,  testCase "E11"  $ assertAllEq exampleE11
   -- , testProperty "all eq (no do, no errors)" $ testAllEq . modelLinesToText
   -- , testProperty "deltas (no do, no errors)" $ testDeltas . modelLinesToText
   -- , testProperty "all eq (with do, no errors)" $ testAllEq . modelLinesWithDoToText
