@@ -781,7 +781,10 @@ exampleI21E20 =
 
 resultI21E20 :: Layout
 resultI21E20 =
-  E 0
+  V 16
+    Empty
+    (mkRun "    \t one")
+    (rel 10 . Rev . Cat.singleton . runSnocMismatch (LayoutMismatch 0 "    \t " "   ") $ mkRun "   two")
 
 exampleI21E21 :: Text
 exampleI21E21 =
@@ -791,7 +794,10 @@ exampleI21E21 =
 
 resultI21E21 :: Layout
 resultI21E21 =
-  E 0
+  V 16
+    Empty
+    (mkRun "    \t one")
+    (rel 10 . Rev . Cat.singleton . runSnocMismatch (LayoutMismatch 0 "    \t " " \t ") $ mkRun " \t two")
 
 exampleI22E00 :: Text
 exampleI22E00 =
@@ -801,7 +807,10 @@ exampleI22E00 =
 
 resultI22E00 :: Layout
 resultI22E00 =
-  E 0
+  V 19
+    Empty
+    (mkRun "      one")
+    (rel 10 . Rev . Cat.singleton $ mkRun "      two")
 
 exampleI22E01 :: Text
 exampleI22E01 =
@@ -811,7 +820,10 @@ exampleI22E01 =
 
 resultI22E01 :: Layout
 resultI22E01 =
-  E 0
+  V 19
+    Empty
+    (mkRun "      one")
+    (rel 10 . Rev . Cat.singleton . runSnocMismatch (LayoutMismatch 0 "      " " \t    ") $ mkRun " \t    two")
 
 exampleI22E02 :: Text
 exampleI22E02 =
@@ -821,7 +833,10 @@ exampleI22E02 =
 
 resultI22E02 :: Layout
 resultI22E02 =
-  E 0
+  V 19
+    Empty
+    (mkRun "      one")
+    (rel 10 . Rev . Cat.singleton . runSnocMismatch (LayoutMismatch 0 "      " "    \t ") $ mkRun "    \t two")
 
 exampleI22E10 :: Text
 exampleI22E10 =
@@ -831,7 +846,10 @@ exampleI22E10 =
 
 resultI22E10 :: Layout
 resultI22E10 =
-  E 0
+  V 19
+    Empty
+    (mkRun " \t    one")
+    (rel 10 . Rev . Cat.singleton . runSnocMismatch (LayoutMismatch 0 " \t    " "      ") $ mkRun "      two")
 
 exampleI22E11 :: Text
 exampleI22E11 =
