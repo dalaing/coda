@@ -28,7 +28,6 @@ import Test.Tasty
 import Test.Tasty.HUnit
 import Test.Tasty.QuickCheck
 
-import FingerTree hiding (Position, reverse)
 import Syntax.Prefix
 import Syntax.Token
 import Syntax.Dyck
@@ -38,7 +37,6 @@ import Relative.Cat hiding (null)
 import qualified Relative.Cat as Cat
 import Relative.Delta
 import Rev
-import Language.Server.Protocol (Position(..))
 import qualified Syntax.Lexer as Lex
 import Syntax.Layout
 import qualified Syntax.Parser as Parse
