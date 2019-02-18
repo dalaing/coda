@@ -2340,491 +2340,972 @@ resultI122E122 :: Layout
 resultI122E122 = E 0
 
 exampleI123E000 :: Text
-exampleI123E000 = ""
+exampleI123E000 =
+  "   one\n\
+  \      two\n\
+  \         three\n\
+  \"
+
 resultI123E000 :: Layout
 resultI123E000 = E 0
 
 exampleI123E001 :: Text
-exampleI123E001 = ""
+exampleI123E001 =
+  "   one\n\
+  \      two\n\
+  \ \t       three\n\
+  \"
+
 resultI123E001 :: Layout
 resultI123E001 = E 0
 
 exampleI123E002 :: Text
-exampleI123E002 = ""
+exampleI123E002 =
+  "   one\n\
+  \      two\n\
+  \    \t    three\n\
+  \"
+
 resultI123E002 :: Layout
 resultI123E002 = E 0
 
 exampleI123E003 :: Text
-exampleI123E003 = ""
+exampleI123E003 =
+  "   one\n\
+  \      two\n\
+  \       \t three\n\
+  \"
+
 resultI123E003 :: Layout
 resultI123E003 = E 0
 
 exampleI123E010 :: Text
-exampleI123E010 = ""
+exampleI123E010 =
+  "   one\n\
+  \ \t    two\n\
+  \         three\n\
+  \"
+
 resultI123E010 :: Layout
 resultI123E010 = E 0
 
 exampleI123E011 :: Text
-exampleI123E011 = ""
+exampleI123E011 =
+  "   one\n\
+  \ \t    two\n\
+  \ \t       three\n\
+  \"
+
 resultI123E011 :: Layout
 resultI123E011 = E 0
 
 exampleI123E012 :: Text
-exampleI123E012 = ""
+exampleI123E012 =
+  "   one\n\
+  \ \t    two\n\
+  \    \t    three\n\
+  \"
+
 resultI123E012 :: Layout
 resultI123E012 = E 0
 
 exampleI123E013 :: Text
-exampleI123E013 = ""
+exampleI123E013 =
+  "   one\n\
+  \ \t    two\n\
+  \       \t three\n\
+  \"
+
 resultI123E013 :: Layout
 resultI123E013 = E 0
 
 exampleI123E020 :: Text
-exampleI123E020 = ""
+exampleI123E020 =
+  "   one\n\
+  \    \t two\n\
+  \         three\n\
+  \"
+
 resultI123E020 :: Layout
 resultI123E020 = E 0
 
 exampleI123E021 :: Text
-exampleI123E021 = ""
+exampleI123E021 =
+  "   one\n\
+  \    \t two\n\
+  \ \t       three\n\
+  \"
+
 resultI123E021 :: Layout
 resultI123E021 = E 0
 
 exampleI123E022 :: Text
-exampleI123E022 = ""
+exampleI123E022 =
+  "   one\n\
+  \    \t two\n\
+  \    \t    three\n\
+  \"
+
 resultI123E022 :: Layout
 resultI123E022 = E 0
 
 exampleI123E023 :: Text
-exampleI123E023 = ""
+exampleI123E023 =
+  "   one\n\
+  \    \t two\n\
+  \       \t three\n\
+  \"
+
 resultI123E023 :: Layout
 resultI123E023 = E 0
 
 exampleI123E100 :: Text
-exampleI123E100 = ""
+exampleI123E100 =
+  " \t one\n\
+  \      two\n\
+  \         three\n\
+  \"
+
 resultI123E100 :: Layout
 resultI123E100 = E 0
 
 exampleI123E101 :: Text
-exampleI123E101 = ""
+exampleI123E101 =
+  " \t one\n\
+  \      two\n\
+  \ \t       three\n\
+  \"
+
 resultI123E101 :: Layout
 resultI123E101 = E 0
 
 exampleI123E102 :: Text
-exampleI123E102 = ""
+exampleI123E102 =
+  " \t one\n\
+  \      two\n\
+  \    \t    three\n\
+  \"
+
 resultI123E102 :: Layout
 resultI123E102 = E 0
 
 exampleI123E103 :: Text
-exampleI123E103 = ""
+exampleI123E103 =
+  " \t one\n\
+  \      two\n\
+  \       \t three\n\
+  \"
+
 resultI123E103 :: Layout
 resultI123E103 = E 0
 
 exampleI123E110 :: Text
-exampleI123E110 = ""
+exampleI123E110 =
+  " \t one\n\
+  \ \t    two\n\
+  \         three\n\
+  \"
+
 resultI123E110 :: Layout
 resultI123E110 = E 0
 
 exampleI123E111 :: Text
-exampleI123E111 = ""
+exampleI123E111 =
+  " \t one\n\
+  \ \t    two\n\
+  \ \t       three\n\
+  \"
+
 resultI123E111 :: Layout
 resultI123E111 = E 0
 
 exampleI123E112 :: Text
-exampleI123E112 = ""
+exampleI123E112 =
+  " \t one\n\
+  \ \t    two\n\
+  \    \t    three\n\
+  \"
+
 resultI123E112 :: Layout
 resultI123E112 = E 0
 
 exampleI123E113 :: Text
-exampleI123E113 = ""
+exampleI123E113 =
+  " \t one\n\
+  \ \t    two\n\
+  \       \t three\n\
+  \"
+
 resultI123E113 :: Layout
 resultI123E113 = E 0
 
 exampleI123E120 :: Text
-exampleI123E120 = ""
+exampleI123E120 =
+  " \t one\n\
+  \    \t two\n\
+  \         three\n\
+  \"
+
 resultI123E120 :: Layout
 resultI123E120 = E 0
 
 exampleI123E121 :: Text
-exampleI123E121 = ""
+exampleI123E121 =
+  " \t one\n\
+  \    \t two\n\
+  \ \t       three\n\
+  \"
+
 resultI123E121 :: Layout
 resultI123E121 = E 0
 
 exampleI123E122 :: Text
-exampleI123E122 = ""
+exampleI123E122 =
+  " \t one\n\
+  \    \t two\n\
+  \    \t    three\n\
+  \"
+
 resultI123E122 :: Layout
 resultI123E122 = E 0
 
 exampleI123E123 :: Text
-exampleI123E123 = ""
+exampleI123E123 =
+  " \t one\n\
+  \    \t two\n\
+  \       \t three\n\
+  \"
+
 resultI123E123 :: Layout
 resultI123E123 = E 0
 
-
 exampleI131E000 :: Text
-exampleI131E000 = ""
+exampleI131E000 =
+  "   one\n\
+  \         two\n\
+  \   three\n\
+  \"
+
 resultI131E000 :: Layout
 resultI131E000 = E 0
 
 exampleI131E001 :: Text
-exampleI131E001 = ""
+exampleI131E001 =
+  "   one\n\
+  \         two\n\
+  \ \t three\n\
+  \"
+
 resultI131E001 :: Layout
 resultI131E001 = E 0
 
 exampleI131E010 :: Text
-exampleI131E010 = ""
+exampleI131E010 =
+  "   one\n\
+  \ \t       two\n\
+  \   three\n\
+  \"
+
 resultI131E010 :: Layout
 resultI131E010 = E 0
 
 exampleI131E011 :: Text
-exampleI131E011 = ""
+exampleI131E011 =
+  "   one\n\
+  \ \t       two\n\
+  \ \t three\n\
+  \"
+
 resultI131E011 :: Layout
 resultI131E011 = E 0
 
 exampleI131E020 :: Text
-exampleI131E020 = ""
+exampleI131E020 =
+  "   one\n\
+  \    \t    two\n\
+  \   three\n\
+  \"
+
 resultI131E020 :: Layout
 resultI131E020 = E 0
 
 exampleI131E021 :: Text
-exampleI131E021 = ""
+exampleI131E021 =
+  "   one\n\
+  \    \t    two\n\
+  \ \t three\n\
+  \"
+
 resultI131E021 :: Layout
 resultI131E021 = E 0
 
 exampleI131E030 :: Text
-exampleI131E030 = ""
+exampleI131E030 =
+  "   one\n\
+  \       \t two\n\
+  \   three\n\
+  \"
+
 resultI131E030 :: Layout
 resultI131E030 = E 0
 
 exampleI131E031 :: Text
-exampleI131E031 = ""
+exampleI131E031 =
+  "   one\n\
+  \       \t two\n\
+  \ \t three\n\
+  \"
+
 resultI131E031 :: Layout
 resultI131E031 = E 0
 
 exampleI131E100 :: Text
-exampleI131E100 = ""
+exampleI131E100 =
+  " \t one\n\
+  \         two\n\
+  \   three\n\
+  \"
+
 resultI131E100 :: Layout
 resultI131E100 = E 0
 
 exampleI131E101 :: Text
-exampleI131E101 = ""
+exampleI131E101 =
+  " \t one\n\
+  \         two\n\
+  \ \t three\n\
+  \"
+
 resultI131E101 :: Layout
 resultI131E101 = E 0
 
 exampleI131E110 :: Text
-exampleI131E110 = ""
+exampleI131E110 =
+  " \t one\n\
+  \ \t       two\n\
+  \   three\n\
+  \"
+
 resultI131E110 :: Layout
 resultI131E110 = E 0
 
 exampleI131E111 :: Text
-exampleI131E111 = ""
+exampleI131E111 =
+  " \t one\n\
+  \ \t       two\n\
+  \ \t three\n\
+  \"
+
 resultI131E111 :: Layout
 resultI131E111 = E 0
 
 exampleI131E120 :: Text
-exampleI131E120 = ""
+exampleI131E120 =
+  " \t one\n\
+  \    \t    two\n\
+  \   three\n\
+  \"
+
 resultI131E120 :: Layout
 resultI131E120 = E 0
 
 exampleI131E121 :: Text
-exampleI131E121 = ""
+exampleI131E121 =
+  " \t one\n\
+  \    \t    two\n\
+  \ \t three\n\
+  \"
+
 resultI131E121 :: Layout
 resultI131E121 = E 0
 
 exampleI131E130 :: Text
-exampleI131E130 = ""
+exampleI131E130 =
+  " \t one\n\
+  \       \t two\n\
+  \   three\n\
+  \"
+
 resultI131E130 :: Layout
 resultI131E130 = E 0
 
 exampleI131E131 :: Text
-exampleI131E131 = ""
+exampleI131E131 =
+  " \t one\n\
+  \       \t two\n\
+  \ \t three\n\
+  \"
 resultI131E131 :: Layout
 resultI131E131 = E 0
 
 
 exampleI132E000 :: Text
-exampleI132E000 = ""
+exampleI132E000 =
+  "   one\n\
+  \         two\n\
+  \      three\n\
+  \"
+
 resultI132E000 :: Layout
 resultI132E000 = E 0
 
 exampleI132E001 :: Text
-exampleI132E001 = ""
+exampleI132E001 =
+  "   one\n\
+  \         two\n\
+  \ \t    three\n\
+  \"
+
 resultI132E001 :: Layout
 resultI132E001 = E 0
 
 exampleI132E002 :: Text
-exampleI132E002 = ""
+exampleI132E002 =
+  "   one\n\
+  \         two\n\
+  \    \t three\n\
+  \"
+
 resultI132E002 :: Layout
 resultI132E002 = E 0
 
 exampleI132E010 :: Text
-exampleI132E010 = ""
+exampleI132E010 =
+  "   one\n\
+  \ \t       two\n\
+  \      three\n\
+  \"
+
 resultI132E010 :: Layout
 resultI132E010 = E 0
 
 exampleI132E011 :: Text
-exampleI132E011 = ""
+exampleI132E011 =
+  "   one\n\
+  \ \t       two\n\
+  \ \t    three\n\
+  \"
+
 resultI132E011 :: Layout
 resultI132E011 = E 0
 
 exampleI132E012 :: Text
-exampleI132E012 = ""
+exampleI132E012 =
+  "   one\n\
+  \ \t       two\n\
+  \    \t three\n\
+  \"
+
 resultI132E012 :: Layout
 resultI132E012 = E 0
 
 exampleI132E020 :: Text
-exampleI132E020 = ""
+exampleI132E020 =
+  "   one\n\
+  \    \t    two\n\
+  \      three\n\
+  \"
+
 resultI132E020 :: Layout
 resultI132E020 = E 0
 
 exampleI132E021 :: Text
-exampleI132E021 = ""
+exampleI132E021 =
+  "   one\n\
+  \    \t    two\n\
+  \ \t    three\n\
+  \"
+
 resultI132E021 :: Layout
 resultI132E021 = E 0
 
 exampleI132E022 :: Text
-exampleI132E022 = ""
+exampleI132E022 =
+  "   one\n\
+  \    \t    two\n\
+  \    \t three\n\
+  \"
+
 resultI132E022 :: Layout
 resultI132E022 = E 0
 
 exampleI132E030 :: Text
-exampleI132E030 = ""
+exampleI132E030 =
+  "   one\n\
+  \       \t two\n\
+  \      three\n\
+  \"
+
 resultI132E030 :: Layout
 resultI132E030 = E 0
 
 exampleI132E031 :: Text
-exampleI132E031 = ""
+exampleI132E031 =
+  "   one\n\
+  \       \t two\n\
+  \ \t    three\n\
+  \"
+
 resultI132E031 :: Layout
 resultI132E031 = E 0
 
 exampleI132E032 :: Text
 exampleI132E032 = ""
+  "   one\n\
+  \       \t two\n\
+  \    \t three\n\
+  \"
+
 resultI132E032 :: Layout
 resultI132E032 = E 0
 
 exampleI132E100 :: Text
-exampleI132E100 = ""
+exampleI132E100 =
+  " \t one\n\
+  \         two\n\
+  \      three\n\
+  \"
+
 resultI132E100 :: Layout
 resultI132E100 = E 0
 
 exampleI132E101 :: Text
-exampleI132E101 = ""
+exampleI132E101 =
+  " \t one\n\
+  \         two\n\
+  \ \t    three\n\
+  \"
+
 resultI132E101 :: Layout
 resultI132E101 = E 0
 
 exampleI132E102 :: Text
-exampleI132E102 = ""
+exampleI132E102 =
+  " \t one\n\
+  \         two\n\
+  \    \t three\n\
+  \"
+
 resultI132E102 :: Layout
 resultI132E102 = E 0
 
 exampleI132E110 :: Text
-exampleI132E110 = ""
+exampleI132E110 =
+  " \t one\n\
+  \ \t       two\n\
+  \      three\n\
+  \"
+
 resultI132E110 :: Layout
 resultI132E110 = E 0
 
 exampleI132E111 :: Text
-exampleI132E111 = ""
+exampleI132E111 =
+  " \t one\n\
+  \ \t       two\n\
+  \ \t    three\n\
+  \"
+
 resultI132E111 :: Layout
 resultI132E111 = E 0
 
 exampleI132E112 :: Text
-exampleI132E112 = ""
+exampleI132E112 =
+  " \t one\n\
+  \ \t       two\n\
+  \    \t three\n\
+  \"
+
 resultI132E112 :: Layout
 resultI132E112 = E 0
 
 exampleI132E120 :: Text
-exampleI132E120 = ""
+exampleI132E120 =
+  " \t one\n\
+  \    \t    two\n\
+  \      three\n\
+  \"
+
 resultI132E120 :: Layout
 resultI132E120 = E 0
 
 exampleI132E121 :: Text
-exampleI132E121 = ""
+exampleI132E121 =
+  " \t one\n\
+  \    \t    two\n\
+  \ \t    three\n\
+  \"
+
 resultI132E121 :: Layout
 resultI132E121 = E 0
 
 exampleI132E122 :: Text
-exampleI132E122 = ""
+exampleI132E122 =
+  " \t one\n\
+  \    \t    two\n\
+  \    \t three\n\
+  \"
+
 resultI132E122 :: Layout
 resultI132E122 = E 0
 
 exampleI132E130 :: Text
-exampleI132E130 = ""
+exampleI132E130 =
+  " \t one\n\
+  \       \t two\n\
+  \      three\n\
+  \"
+
 resultI132E130 :: Layout
 resultI132E130 = E 0
 
 exampleI132E131 :: Text
-exampleI132E131 = ""
+exampleI132E131 =
+  " \t one\n\
+  \       \t two\n\
+  \ \t    three\n\
+  \"
+
 resultI132E131 :: Layout
 resultI132E131 = E 0
 
 exampleI132E132 :: Text
-exampleI132E132 = ""
+exampleI132E132 =
+  " \t one\n\
+  \       \t two\n\
+  \    \t three\n\
+  \"
+
 resultI132E132 :: Layout
 resultI132E132 = E 0
 
-
 exampleI133E000 :: Text
-exampleI133E000 = ""
+exampleI133E000 =
+  "   one\n\
+  \         two\n\
+  \         three\n\
+  \"
+
 resultI133E000 :: Layout
 resultI133E000 = E 0
 
 exampleI133E001 :: Text
-exampleI133E001 = ""
+exampleI133E001 =
+  "   one\n\
+  \         two\n\
+  \ \t       three\n\
+  \"
+
 resultI133E001 :: Layout
 resultI133E001 = E 0
 
 exampleI133E002 :: Text
-exampleI133E002 = ""
+exampleI133E002 =
+  "   one\n\
+  \         two\n\
+  \    \t    three\n\
+  \"
+
 resultI133E002 :: Layout
 resultI133E002 = E 0
 
 exampleI133E003 :: Text
-exampleI133E003 = ""
+exampleI133E003 =
+  "   one\n\
+  \         two\n\
+  \       \t three\n\
+  \"
+
 resultI133E003 :: Layout
 resultI133E003 = E 0
 
 exampleI133E010 :: Text
-exampleI133E010 = ""
+exampleI133E010 =
+  "   one\n\
+  \ \t       two\n\
+  \         three\n\
+  \"
+
 resultI133E010 :: Layout
 resultI133E010 = E 0
 
 exampleI133E011 :: Text
-exampleI133E011 = ""
+exampleI133E011 =
+  "   one\n\
+  \ \t       two\n\
+  \ \t       three\n\
+  \"
+
 resultI133E011 :: Layout
 resultI133E011 = E 0
 
 exampleI133E012 :: Text
-exampleI133E012 = ""
+exampleI133E012 =
+  "   one\n\
+  \ \t       two\n\
+  \    \t    three\n\
+  \"
+
 resultI133E012 :: Layout
 resultI133E012 = E 0
 
 exampleI133E013 :: Text
-exampleI133E013 = ""
+exampleI133E013 =
+  "   one\n\
+  \ \t       two\n\
+  \       \t three\n\
+  \"
+
 resultI133E013 :: Layout
 resultI133E013 = E 0
 
 exampleI133E020 :: Text
-exampleI133E020 = ""
+exampleI133E020 =
+  "   one\n\
+  \    \t    two\n\
+  \         three\n\
+  \"
+
 resultI133E020 :: Layout
 resultI133E020 = E 0
 
 exampleI133E021 :: Text
-exampleI133E021 = ""
+exampleI133E021 =
+  "   one\n\
+  \    \t    two\n\
+  \ \t       three\n\
+  \"
+
 resultI133E021 :: Layout
 resultI133E021 = E 0
 
 exampleI133E022 :: Text
-exampleI133E022 = ""
+exampleI133E022 =
+  "   one\n\
+  \    \t    two\n\
+  \    \t    three\n\
+  \"
+
 resultI133E022 :: Layout
 resultI133E022 = E 0
 
 exampleI133E023 :: Text
-exampleI133E023 = ""
+exampleI133E023 =
+  "   one\n\
+  \    \t    two\n\
+  \       \t three\n\
+  \"
+
 resultI133E023 :: Layout
 resultI133E023 = E 0
 
 exampleI133E030 :: Text
-exampleI133E030 = ""
+exampleI133E030 =
+  "   one\n\
+  \       \t two\n\
+  \         three\n\
+  \"
+
 resultI133E030 :: Layout
 resultI133E030 = E 0
 
 exampleI133E031 :: Text
-exampleI133E031 = ""
+exampleI133E031 =
+  "   one\n\
+  \       \t two\n\
+  \ \t       three\n\
+  \"
+
 resultI133E031 :: Layout
 resultI133E031 = E 0
 
 exampleI133E032 :: Text
-exampleI133E032 = ""
+exampleI133E032 =
+  "   one\n\
+  \       \t two\n\
+  \    \t    three\n\
+  \"
+
 resultI133E032 :: Layout
 resultI133E032 = E 0
 
 exampleI133E033 :: Text
-exampleI133E033 = ""
+exampleI133E033 =
+  "   one\n\
+  \       \t two\n\
+  \       \t three\n\
+  \"
+
 resultI133E033 :: Layout
 resultI133E033 = E 0
 
 exampleI133E100 :: Text
-exampleI133E100 = ""
+exampleI133E100 =
+  " \t one\n\
+  \         two\n\
+  \         three\n\
+  \"
+
 resultI133E100 :: Layout
 resultI133E100 = E 0
 
 exampleI133E101 :: Text
-exampleI133E101 = ""
+exampleI133E101 =
+  " \t one\n\
+  \         two\n\
+  \ \t       three\n\
+  \"
+
 resultI133E101 :: Layout
 resultI133E101 = E 0
 
 exampleI133E102 :: Text
-exampleI133E102 = ""
+exampleI133E102 =
+  " \t one\n\
+  \         two\n\
+  \    \t    three\n\
+  \"
+
 resultI133E102 :: Layout
 resultI133E102 = E 0
 
 exampleI133E103 :: Text
-exampleI133E103 = ""
+exampleI133E103 =
+  " \t one\n\
+  \         two\n\
+  \       \t three\n\
+  \"
+
 resultI133E103 :: Layout
 resultI133E103 = E 0
 
 exampleI133E110 :: Text
-exampleI133E110 = ""
+exampleI133E110 =
+  " \t one\n\
+  \ \t       two\n\
+  \         three\n\
+  \"
+
 resultI133E110 :: Layout
 resultI133E110 = E 0
 
 exampleI133E111 :: Text
-exampleI133E111 = ""
+exampleI133E111 =
+  " \t one\n\
+  \ \t       two\n\
+  \ \t       three\n\
+  \"
+
 resultI133E111 :: Layout
 resultI133E111 = E 0
 
 exampleI133E112 :: Text
-exampleI133E112 = ""
+exampleI133E112 =
+  " \t one\n\
+  \ \t       two\n\
+  \    \t    three\n\
+  \"
+
 resultI133E112 :: Layout
 resultI133E112 = E 0
 
 exampleI133E113 :: Text
-exampleI133E113 = ""
+exampleI133E113 =
+  " \t one\n\
+  \ \t       two\n\
+  \       \t three\n\
+  \"
+
 resultI133E113 :: Layout
 resultI133E113 = E 0
 
 exampleI133E120 :: Text
-exampleI133E120 = ""
+exampleI133E120 =
+  " \t one\n\
+  \    \t    two\n\
+  \         three\n\
+  \"
+
 resultI133E120 :: Layout
 resultI133E120 = E 0
 
 exampleI133E121 :: Text
-exampleI133E121 = ""
+exampleI133E121 =
+  " \t one\n\
+  \    \t    two\n\
+  \ \t       three\n\
+  \"
+
 resultI133E121 :: Layout
 resultI133E121 = E 0
 
 exampleI133E122 :: Text
-exampleI133E122 = ""
+exampleI133E122 =
+  " \t one\n\
+  \    \t    two\n\
+  \    \t    three\n\
+  \"
+
 resultI133E122 :: Layout
 resultI133E122 = E 0
 
 exampleI133E123 :: Text
-exampleI133E123 = ""
+exampleI133E123 =
+  " \t one\n\
+  \    \t    two\n\
+  \       \t three\n\
+  \"
+
 resultI133E123 :: Layout
 resultI133E123 = E 0
 
 exampleI133E130 :: Text
-exampleI133E130 = ""
+exampleI133E130 =
+  " \t one\n\
+  \       \t two\n\
+  \         three\n\
+  \"
+
 resultI133E130 :: Layout
 resultI133E130 = E 0
 
 exampleI133E131 :: Text
-exampleI133E131 = ""
+exampleI133E131 =
+  " \t one\n\
+  \       \t two\n\
+  \ \t       three\n\
+  \"
+
 resultI133E131 :: Layout
 resultI133E131 = E 0
 
 exampleI133E132 :: Text
-exampleI133E132 = ""
+exampleI133E132 =
+  " \t one\n\
+  \       \t two\n\
+  \    \t    three\n\
+  \"
+
 resultI133E132 :: Layout
 resultI133E132 = E 0
 
 exampleI133E133 :: Text
-exampleI133E133 = ""
+exampleI133E133 =
+  " \t one\n\
+  \       \t two\n\
+  \       \t three\n\
+  \"
+
 resultI133E133 :: Layout
 resultI133E133 = E 0
 
-
 exampleI211E000 :: Text
-exampleI211E000 = ""
+exampleI211E000 =
+  "      one\n\
+  \   two\n\
+  \   three\n\
+  \"
+
 resultI211E000 :: Layout
 resultI211E000 = E 0
 
@@ -2885,7 +3366,12 @@ resultI211E211 = E 0
 
 
 exampleI212E000 :: Text
-exampleI212E000 = ""
+exampleI212E000 =
+  "      one\n\
+  \   two\n\
+  \      three\n\
+  \"
+
 resultI212E000 :: Layout
 resultI212E000 = E 0
 
@@ -2976,7 +3462,12 @@ resultI212E212 = E 0
 
 
 exampleI213E000 :: Text
-exampleI213E000 = ""
+exampleI213E000 =
+  "      one\n\
+  \   two\n\
+  \         three\n\
+  \"
+
 resultI213E000 :: Layout
 resultI213E000 = E 0
 
@@ -3097,7 +3588,12 @@ resultI213E213 = E 0
 
 
 exampleI221E000 :: Text
-exampleI221E000 = ""
+exampleI221E000 =
+  "      one\n\
+  \      two\n\
+  \   three\n\
+  \"
+
 resultI221E000 :: Layout
 resultI221E000 = E 0
 
@@ -3188,7 +3684,12 @@ resultI221E221 = E 0
 
 
 exampleI222E000 :: Text
-exampleI222E000 = ""
+exampleI222E000 =
+  "      one\n\
+  \      two\n\
+  \      three\n\
+  \"
+
 resultI222E000 :: Layout
 resultI222E000 = E 0
 
@@ -3324,7 +3825,12 @@ resultI222E222 = E 0
 
 
 exampleI223E000 :: Text
-exampleI223E000 = ""
+exampleI223E000 =
+  "      one\n\
+  \      two\n\
+  \         three\n\
+  \"
+
 resultI223E000 :: Layout
 resultI223E000 = E 0
 
@@ -3505,7 +4011,12 @@ resultI223E223 = E 0
 
 
 exampleI231E000 :: Text
-exampleI231E000 = ""
+exampleI231E000 =
+  "      one\n\
+  \         two\n\
+  \   three\n\
+  \"
+
 resultI231E000 :: Layout
 resultI231E000 = E 0
 
@@ -3626,7 +4137,12 @@ resultI231E231 = E 0
 
 
 exampleI232E000 :: Text
-exampleI232E000 = ""
+exampleI232E000 =
+  "      one\n\
+  \         two\n\
+  \      three\n\
+  \"
+
 resultI232E000 :: Layout
 resultI232E000 = E 0
 
@@ -3807,7 +4323,12 @@ resultI232E232 = E 0
 
 
 exampleI233E000 :: Text
-exampleI233E000 = ""
+exampleI233E000 =
+  "      one\n\
+  \         two\n\
+  \         three\n\
+  \"
+
 resultI233E000 :: Layout
 resultI233E000 = E 0
 
