@@ -564,42 +564,6 @@ exampleE11 =
   \    four\n\
   \"
 
-test_layout_example :: TestTree
-test_layout_example =
-  testGroup "example" [
-    testGroup "one" [
-      testCase "I1E0"  $ assertAllEqTo exampleI1E0 resultI1E0
-    , testCase "I1E1"  $ assertAllEqTo exampleI1E1 resultI1E1
-    ]
-  , testGroup "two" [
-      testCase "I11E00"  $ assertAllEqTo exampleI11E00 resultI11E00
-    , testCase "I11E01"  $ assertAllEqTo exampleI11E01 resultI11E01
-    , testCase "I11E10"  $ assertAllEqTo exampleI11E10 resultI11E10
-    , testCase "I11E11"  $ assertAllEqTo exampleI11E11 resultI11E11
-    , testCase "I12E00"  $ assertAllEqTo exampleI12E00 resultI12E00
-    , testCase "I12E01"  $ assertAllEqTo exampleI12E01 resultI12E01
-    , testCase "I12E02"  $ assertAllEqTo exampleI12E02 resultI12E02
-    , testCase "I12E10"  $ assertAllEqTo exampleI12E10 resultI12E10
-    , testCase "I12E11"  $ assertAllEqTo exampleI12E11 resultI12E11
-    , testCase "I12E12"  $ assertAllEqTo exampleI12E12 resultI12E12
-    , testCase "I21E00"  $ assertAllEqTo exampleI21E00 resultI21E00
-    , testCase "I21E01"  $ assertAllEqTo exampleI21E01 resultI21E01
-    , testCase "I21E10"  $ assertAllEqTo exampleI21E10 resultI21E10
-    , testCase "I21E11"  $ assertAllEqTo exampleI21E11 resultI21E11
-    , testCase "I21E20"  $ assertAllEqTo exampleI21E20 resultI21E20
-    , testCase "I21E21"  $ assertAllEqTo exampleI21E21 resultI21E21
-    , testCase "I22E00"  $ assertAllEqTo exampleI22E00 resultI22E00
-    , testCase "I22E01"  $ assertAllEqTo exampleI22E01 resultI22E01
-    , testCase "I22E02"  $ assertAllEqTo exampleI22E02 resultI22E02
-    , testCase "I22E10"  $ assertAllEqTo exampleI22E10 resultI22E10
-    , testCase "I22E11"  $ assertAllEqTo exampleI22E11 resultI22E11
-    , testCase "I22E12"  $ assertAllEqTo exampleI22E12 resultI22E12
-    , testCase "I22E20"  $ assertAllEqTo exampleI22E20 resultI22E20
-    , testCase "I22E21"  $ assertAllEqTo exampleI22E21 resultI22E21
-    , testCase "I22E22"  $ assertAllEqTo exampleI22E22 resultI22E22
-    ]
-  ]
-
 -- one
 
 exampleI1E0 :: Text
@@ -1153,32 +1117,581 @@ resultI22E22 =
       (Run p1 (Cat.singleton l1) l1 Empty p1)
       (Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 Empty p2)
 
+exampleI111E000 :: Text
+exampleI111E000 =
+  "   one\n\
+  \   two\n\
+  \   three\n\
+  \"
+
+resultI111E000 :: Layout
+resultI111E000 =
+  let
+    pt1 = "   "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "   "
+    p2 = Prefix pt2
+    l2 = rel 7 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = "   "
+    p3 = Prefix pt3
+    l3 = rel 14 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 22
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 Empty p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 Empty p3))
+
+exampleI111E001 :: Text
+exampleI111E001 =
+  "   one\n\
+  \   two\n\
+  \ \t three\n\
+  \"
+
+resultI111E001 :: Layout
+resultI111E001 =
+  let
+    pt1 = "   "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "   "
+    p2 = Prefix pt2
+    l2 = rel 7 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = " \t "
+    p3 = Prefix pt3
+    l3 = rel 14 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 22
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 Empty p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 (Cat.singleton $ LayoutMismatch 14 p2 p3) p3))
+
+exampleI111E010 :: Text
+exampleI111E010 =
+  "   one\n\
+  \ \t two\n\
+  \   three\n\
+  \"
+
+resultI111E010 :: Layout
+resultI111E010 =
+  let
+    pt1 = "   "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = " \t "
+    p2 = Prefix pt2
+    l2 = rel 7 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = "   "
+    p3 = Prefix pt3
+    l3 = rel 14 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 22
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 7 p1 p2) p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 (Cat.singleton $ LayoutMismatch 14 p2 p3) p3))
+
+exampleI111E011 :: Text
+exampleI111E011 =
+  "   one\n\
+  \ \t two\n\
+  \ \t three\n\
+  \"
+
+resultI111E011 :: Layout
+resultI111E011 =
+  let
+    pt1 = "   "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = " \t "
+    p2 = Prefix pt2
+    l2 = rel 7 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = " \t "
+    p3 = Prefix pt3
+    l3 = rel 14 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 22
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 7 p1 p2) p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 Empty p3))
+
+exampleI111E100 :: Text
+exampleI111E100 =
+  " \t one\n\
+  \   two\n\
+  \   three\n\
+  \"
+
+resultI111E100 :: Layout
+resultI111E100 =
+  let
+    pt1 = " \t "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "   "
+    p2 = Prefix pt2
+    l2 = rel 7 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = "   "
+    p3 = Prefix pt3
+    l3 = rel 14 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 22
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 7 p1 p2) p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 Empty p3))
+
+exampleI111E101 :: Text
+exampleI111E101 =
+  " \t one\n\
+  \   two\n\
+  \ \t three\n\
+  \"
+
+resultI111E101 :: Layout
+resultI111E101 =
+  let
+    pt1 = " \t "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "   "
+    p2 = Prefix pt2
+    l2 = rel 7 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = " \t "
+    p3 = Prefix pt3
+    l3 = rel 14 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 22
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 7 p1 p2) p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 (Cat.singleton $ LayoutMismatch 14 p2 p3) p3))
+
+exampleI111E110 :: Text
+exampleI111E110 =
+  " \t one\n\
+  \ \t two\n\
+  \   three\n\
+  \"
+
+resultI111E110 :: Layout
+resultI111E110 =
+  let
+    pt1 = " \t "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = " \t "
+    p2 = Prefix pt2
+    l2 = rel 7 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = "   "
+    p3 = Prefix pt3
+    l3 = rel 14 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 22
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 Empty p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 (Cat.singleton $ LayoutMismatch 14 p2 p3) p3))
+
+exampleI111E111 :: Text
+exampleI111E111 =
+  " \t one\n\
+  \ \t two\n\
+  \ \t three\n\
+  \"
+
+resultI111E111 :: Layout
+resultI111E111 =
+  let
+    pt1 = " \t "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = " \t "
+    p2 = Prefix pt2
+    l2 = rel 7 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = " \t "
+    p3 = Prefix pt3
+    l3 = rel 14 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 22
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 Empty p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 Empty p3))
+
+exampleI112E000 :: Text
+exampleI112E000 =
+  "   one\n\
+  \   two\n\
+  \      three\n\
+  \"
+
+resultI112E000 :: Layout
+resultI112E000 =
+  let
+    pt1 = "   "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "   "
+    p2 = Prefix pt2
+    l2 = rel 7 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = "      "
+    p3 = Prefix pt3
+    l3 = rel 14 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 25
+      Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      (Rev . Cat.singleton $ Run p2 (Cat.singleton l2 <> Cat.singleton l3) (l2 <> l3) Empty p3)
+
+exampleI112E001 :: Text
+exampleI112E001 =
+  "   one\n\
+  \   two\n\
+  \ \t    three\n\
+  \"
+
+resultI112E001 :: Layout
+resultI112E001 =
+  let
+    pt1 = "   "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "   "
+    p2 = Prefix pt2
+    l2 = rel 7 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = " \t    "
+    p3 = Prefix pt3
+    l3 = rel 14 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 25
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 Empty p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 (Cat.singleton $ LayoutMismatch 14 p2 p3) p3))
+
+exampleI112E002 :: Text
+exampleI112E002 =
+  "   one\n\
+  \   two\n\
+  \    \t three\n\
+  \"
+
+resultI112E002 :: Layout
+resultI112E002 =
+  let
+    pt1 = "   "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "   "
+    p2 = Prefix pt2
+    l2 = rel 7 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = "    \t "
+    p3 = Prefix pt3
+    l3 = rel 14 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 25
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      (Rev . Cat.singleton $ Run p2 (Cat.singleton l2 <> Cat.singleton l3) (l2 <> l3) Empty p3)
+
+exampleI112E010 :: Text
+exampleI112E010 =
+  "   one\n\
+  \ \t two\n\
+  \      three\n\
+  \"
+
+resultI112E010 :: Layout
+resultI112E010 =
+  let
+    pt1 = "   "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = " \t "
+    p2 = Prefix pt2
+    l2 = rel 7 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = "      "
+    p3 = Prefix pt3
+    l3 = rel 14 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 25
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 7 p1 p2) p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 (Cat.singleton $ LayoutMismatch 14 p2 p3) p3))
+
+exampleI112E011 :: Text
+exampleI112E011 =
+  "   one\n\
+  \ \t two\n\
+  \ \t    three\n\
+  \"
+
+resultI112E011 :: Layout
+resultI112E011 =
+  let
+    pt1 = "   "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = " \t "
+    p2 = Prefix pt2
+    l2 = rel 7 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = " \t    "
+    p3 = Prefix pt3
+    l3 = rel 14 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 25
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      (Rev . Cat.singleton $ Run p2 (Cat.singleton l2 <> Cat.singleton l3) (l2 <> l3) (Cat.singleton $ LayoutMismatch 7 p1 p2) p3)
+
+exampleI112E012 :: Text
+exampleI112E012 =
+  "   one\n\
+  \ \t two\n\
+  \    \t three\n\
+  \"
+
+resultI112E012 :: Layout
+resultI112E012 =
+  let
+    pt1 = "   "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = " \t "
+    p2 = Prefix pt2
+    l2 = rel 7 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = "    \t "
+    p3 = Prefix pt3
+    l3 = rel 14 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 25
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 7 p1 p2) p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 (Cat.singleton $ LayoutMismatch 14 p2 p3) p3))
+
+exampleI112E100 :: Text
+exampleI112E100 =
+  " \t one\n\
+  \   two\n\
+  \      three\n\
+  \"
+
+resultI112E100 :: Layout
+resultI112E100 =
+  let
+    pt1 = " \t "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "   "
+    p2 = Prefix pt2
+    l2 = rel 7 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = "      "
+    p3 = Prefix pt3
+    l3 = rel 14 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 25
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      (Rev . Cat.singleton $ Run p2 (Cat.singleton l2 <> Cat.singleton l3) (l2 <> l3) (Cat.singleton $ LayoutMismatch 7 p1 p2) p3)
+
+exampleI112E101 :: Text
+exampleI112E101 =
+  " \t one\n\
+  \   two\n\
+  \ \t    three\n\
+  \"
+
+resultI112E101 :: Layout
+resultI112E101 =
+  let
+    pt1 = " \t "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "   "
+    p2 = Prefix pt2
+    l2 = rel 7 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = " \t    "
+    p3 = Prefix pt3
+    l3 = rel 14 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 25
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 7 p1 p2) p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 (Cat.singleton $ LayoutMismatch 14 p2 p3) p3))
+
+exampleI112E102 :: Text
+exampleI112E102 =
+  " \t one\n\
+  \   two\n\
+  \    \t three\n\
+  \"
+
+resultI112E102 :: Layout
+resultI112E102 =
+  let
+    pt1 = " \t "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "   "
+    p2 = Prefix pt2
+    l2 = rel 7 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = "    \t "
+    p3 = Prefix pt3
+    l3 = rel 14 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 25
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      (Rev . Cat.singleton $ Run p2 (Cat.singleton l2 <> Cat.singleton l3) (l2 <> l3) (Cat.singleton $ LayoutMismatch 7 p1 p2) p3)
+
+exampleI112E110 :: Text
+exampleI112E110 =
+  " \t one\n\
+  \ \t two\n\
+  \      three\n\
+  \"
+
+resultI112E110 :: Layout
+resultI112E110 =
+  let
+    pt1 = " \t "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = " \t "
+    p2 = Prefix pt2
+    l2 = rel 7 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = "      "
+    p3 = Prefix pt3
+    l3 = rel 14 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 25
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 Empty p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 (Cat.singleton $ LayoutMismatch 14 p2 p3) p3))
+
+exampleI112E111 :: Text
+exampleI112E111 =
+  " \t one\n\
+  \ \t two\n\
+  \ \t    three\n\
+  \"
+
+resultI112E111 :: Layout
+resultI112E111 =
+  let
+    pt1 = " \t "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = " \t "
+    p2 = Prefix pt2
+    l2 = rel 7 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = " \t    "
+    p3 = Prefix pt3
+    l3 = rel 14 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 25
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      (Rev . Cat.singleton $ Run p2 (Cat.singleton l2 <> Cat.singleton l3) (l2 <> l3) Empty p3)
+
+exampleI112E112 :: Text
+exampleI112E112 =
+  " \t one\n\
+  \ \t two\n\
+  \    \t three\n\
+  \"
+
+resultI112E112 :: Layout
+resultI112E112 =
+  let
+    pt1 = " \t "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = " \t "
+    p2 = Prefix pt2
+    l2 = rel 7 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = "    \t "
+    p3 = Prefix pt3
+    l3 = rel 14 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 25
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 Empty p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 (Cat.singleton $ LayoutMismatch 14 p2 p3) p3))
+
+test_layout_example :: TestTree
+test_layout_example =
+  testGroup "example" [
+    testGroup "one" [
+      testCase "I1E0"  $ assertAllEqTo exampleI1E0 resultI1E0
+    , testCase "I1E1"  $ assertAllEqTo exampleI1E1 resultI1E1
+    ]
+  , testGroup "two" [
+      testCase "I11E00"  $ assertAllEqTo exampleI11E00 resultI11E00
+    , testCase "I11E01"  $ assertAllEqTo exampleI11E01 resultI11E01
+    , testCase "I11E10"  $ assertAllEqTo exampleI11E10 resultI11E10
+    , testCase "I11E11"  $ assertAllEqTo exampleI11E11 resultI11E11
+    , testCase "I12E00"  $ assertAllEqTo exampleI12E00 resultI12E00
+    , testCase "I12E01"  $ assertAllEqTo exampleI12E01 resultI12E01
+    , testCase "I12E02"  $ assertAllEqTo exampleI12E02 resultI12E02
+    , testCase "I12E10"  $ assertAllEqTo exampleI12E10 resultI12E10
+    , testCase "I12E11"  $ assertAllEqTo exampleI12E11 resultI12E11
+    , testCase "I12E12"  $ assertAllEqTo exampleI12E12 resultI12E12
+    , testCase "I21E00"  $ assertAllEqTo exampleI21E00 resultI21E00
+    , testCase "I21E01"  $ assertAllEqTo exampleI21E01 resultI21E01
+    , testCase "I21E10"  $ assertAllEqTo exampleI21E10 resultI21E10
+    , testCase "I21E11"  $ assertAllEqTo exampleI21E11 resultI21E11
+    , testCase "I21E20"  $ assertAllEqTo exampleI21E20 resultI21E20
+    , testCase "I21E21"  $ assertAllEqTo exampleI21E21 resultI21E21
+    , testCase "I22E00"  $ assertAllEqTo exampleI22E00 resultI22E00
+    , testCase "I22E01"  $ assertAllEqTo exampleI22E01 resultI22E01
+    , testCase "I22E02"  $ assertAllEqTo exampleI22E02 resultI22E02
+    , testCase "I22E10"  $ assertAllEqTo exampleI22E10 resultI22E10
+    , testCase "I22E11"  $ assertAllEqTo exampleI22E11 resultI22E11
+    , testCase "I22E12"  $ assertAllEqTo exampleI22E12 resultI22E12
+    , testCase "I22E20"  $ assertAllEqTo exampleI22E20 resultI22E20
+    , testCase "I22E21"  $ assertAllEqTo exampleI22E21 resultI22E21
+    , testCase "I22E22"  $ assertAllEqTo exampleI22E22 resultI22E22
+    ]
+  , testGroup "three" [
+      testCase "I111E000"  $ assertAllEqTo exampleI111E000 resultI111E000
+    , testCase "I111E001"  $ assertAllEqTo exampleI111E001 resultI111E001
+    , testCase "I111E010"  $ assertAllEqTo exampleI111E010 resultI111E010
+    , testCase "I111E011"  $ assertAllEqTo exampleI111E011 resultI111E011
+    , testCase "I111E100"  $ assertAllEqTo exampleI111E100 resultI111E100
+    , testCase "I111E101"  $ assertAllEqTo exampleI111E101 resultI111E101
+    , testCase "I111E110"  $ assertAllEqTo exampleI111E110 resultI111E110
+    , testCase "I111E111"  $ assertAllEqTo exampleI111E111 resultI111E111
+    , testCase "I112E000"  $ assertAllEqTo exampleI112E000 resultI112E000
+    , testCase "I112E001"  $ assertAllEqTo exampleI112E001 resultI112E001
+    , testCase "I112E002"  $ assertAllEqTo exampleI112E002 resultI112E002
+    , testCase "I112E010"  $ assertAllEqTo exampleI112E010 resultI112E010
+    , testCase "I112E011"  $ assertAllEqTo exampleI112E011 resultI112E011
+    , testCase "I112E012"  $ assertAllEqTo exampleI112E012 resultI112E012
+    , testCase "I112E100"  $ assertAllEqTo exampleI112E100 resultI112E100
+    , testCase "I112E101"  $ assertAllEqTo exampleI112E101 resultI112E101
+    , testCase "I112E102"  $ assertAllEqTo exampleI112E102 resultI112E102
+    , testCase "I112E110"  $ assertAllEqTo exampleI112E110 resultI112E110
+    , testCase "I112E111"  $ assertAllEqTo exampleI112E111 resultI112E111
+    , testCase "I112E112"  $ assertAllEqTo exampleI112E112 resultI112E112
+    ]
+  ]
+
 {-
 -- three
 
--- test_layout_example_three :: TestTree
--- test_layout_example_three =
-  testGroup "three" [
-    testCase "I111E000"  $ assertAllEqTo exampleI111E000 resultI111E000
-  , testCase "I111E001"  $ assertAllEqTo exampleI111E001 resultI111E001
-  , testCase "I111E010"  $ assertAllEqTo exampleI111E010 resultI111E010
-  , testCase "I111E011"  $ assertAllEqTo exampleI111E011 resultI111E011
-  , testCase "I111E100"  $ assertAllEqTo exampleI111E100 resultI111E100
-  , testCase "I111E101"  $ assertAllEqTo exampleI111E101 resultI111E101
-  , testCase "I111E110"  $ assertAllEqTo exampleI111E110 resultI111E110
-  , testCase "I111E111"  $ assertAllEqTo exampleI111E111 resultI111E111
-  , testCase "I112E000"  $ assertAllEqTo exampleI112E000 resultI112E000
-  , testCase "I112E001"  $ assertAllEqTo exampleI112E001 resultI112E001
-  , testCase "I112E002"  $ assertAllEqTo exampleI112E002 resultI112E002
-  , testCase "I112E010"  $ assertAllEqTo exampleI112E010 resultI112E010
-  , testCase "I112E011"  $ assertAllEqTo exampleI112E011 resultI112E011
-  , testCase "I112E012"  $ assertAllEqTo exampleI112E012 resultI112E012
-  , testCase "I112E100"  $ assertAllEqTo exampleI112E100 resultI112E100
-  , testCase "I112E101"  $ assertAllEqTo exampleI112E101 resultI112E101
-  , testCase "I112E102"  $ assertAllEqTo exampleI112E102 resultI112E102
-  , testCase "I112E110"  $ assertAllEqTo exampleI112E110 resultI112E110
-  , testCase "I112E111"  $ assertAllEqTo exampleI112E111 resultI112E111
-  , testCase "I112E112"  $ assertAllEqTo exampleI112E112 resultI112E112
   , testCase "I113E000"  $ assertAllEqTo exampleI113E000 resultI113E000
   , testCase "I113E001"  $ assertAllEqTo exampleI113E001 resultI113E001
   , testCase "I113E002"  $ assertAllEqTo exampleI113E002 resultI113E002
@@ -1197,74 +1710,6 @@ resultI22E22 =
   , testCase "I113E113"  $ assertAllEqTo exampleI113E113 resultI113E113
   ]
 
-exampleI111E000 :: Text
-exampleI111E000 =
-  "   one\n\
-  \   two\n\
-  \   three\n\
-  \"
-
-exampleI111E001 :: Text
-exampleI111E001 =
-  "   one\n\
-  \   two\n\
-  \ \t three\n\
-  \"
-
-exampleI111E010 :: Text
-exampleI111E010 =
-  "   one\n\
-  \ \t two\n\
-  \   three\n\
-  \"
-
-exampleI111E011 :: Text
-exampleI111E011 =
-  "   one\n\
-  \ \t two\n\
-  \ \t three\n\
-  \"
-
-exampleI111E100 :: Text
-exampleI111E100 =
-  " \t one\n\
-  \   two\n\
-  \   three\n\
-  \"
-
-exampleI111E101 :: Text
-exampleI111E101 =
-  " \t one\n\
-  \   two\n\
-  \ \t three\n\
-  \"
-
-exampleI111E110 :: Text
-exampleI111E110 =
-  " \t one\n\
-  \ \t two\n\
-  \   three\n\
-  \"
-
-exampleI111E111 :: Text
-exampleI111E111 =
-  " \t one\n\
-  \ \t two\n\
-  \ \t three\n\
-  \"
-
-exampleI112E000 :: Text
-exampleI112E001 :: Text
-exampleI112E002 :: Text
-exampleI112E010 :: Text
-exampleI112E011 :: Text
-exampleI112E012 :: Text
-exampleI112E100 :: Text
-exampleI112E101 :: Text
-exampleI112E102 :: Text
-exampleI112E110 :: Text
-exampleI112E111 :: Text
-exampleI112E112 :: Text
 
 exampleI113E000 :: Text
 exampleI113E001 :: Text
