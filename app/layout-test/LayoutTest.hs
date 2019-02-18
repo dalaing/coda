@@ -28,7 +28,7 @@ import Test.Tasty
 import Test.Tasty.HUnit
 import Test.Tasty.QuickCheck
 
-import FingerTree hiding (Position)
+import FingerTree hiding (Position, reverse)
 import Syntax.Prefix
 import Syntax.Token
 import Syntax.Dyck
@@ -44,14 +44,6 @@ import Syntax.Layout
 import qualified Syntax.Parser as Parse
 
 import Debug.Trace
-
-mkRun :: Text -> Run
-mkRun txt =
-  let
-    p = fromText txt
-    t = Lex.lex txt
-  in
-    Run p (Cat.singleton t) t Empty p
 
 linesToLayouts :: Delta -> [Text] -> (Delta, [Layout])
 linesToLayouts d0 ls =
@@ -617,7 +609,13 @@ exampleI1E0 =
 
 resultI1E0 :: Layout
 resultI1E0 =
-  S 6 $ mkRun "   one"
+  let
+    pt1 = "   "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+  in
+    S 6 $
+      Run p1 (Cat.singleton l1) l1 Empty p1
 
 exampleI1E1 :: Text
 exampleI1E1 =
@@ -626,7 +624,13 @@ exampleI1E1 =
 
 resultI1E1 :: Layout
 resultI1E1 =
-  S 6 $ mkRun " \t one"
+  let
+    pt1 = " \t "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+  in
+    S 6 $
+      Run p1 (Cat.singleton l1) l1 Empty p1
 
 -- two
 
@@ -638,10 +642,18 @@ exampleI11E00 =
 
 resultI11E00 :: Layout
 resultI11E00 =
-  V 13
-    Empty
-    (mkRun "   one")
-    (rel 7 . Rev . Cat.singleton . mkRun $ "   two")
+  let
+    pt1 = "   "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "   "
+    p2 = Prefix pt2
+    l2 = rel 7 $ Lex.lex $ pt2 <> "two\n"
+  in
+    V 13
+      Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      (Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 Empty p2)
 
 exampleI11E01 :: Text
 exampleI11E01 =
@@ -651,7 +663,18 @@ exampleI11E01 =
 
 resultI11E01 :: Layout
 resultI11E01 =
-  E 0
+  let
+    pt1 = "   "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = " \t "
+    p2 = Prefix pt2
+    l2 = rel 7 $ Lex.lex $ pt2 <> "two\n"
+  in
+    V 13
+      Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      (Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 7 p1 p2) p2)
 
 exampleI11E10 :: Text
 exampleI11E10 =
@@ -661,7 +684,18 @@ exampleI11E10 =
 
 resultI11E10 :: Layout
 resultI11E10 =
-  E 0
+  let
+    pt1 = " \t "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "   "
+    p2 = Prefix pt2
+    l2 = rel 7 $ Lex.lex $ pt2 <> "two\n"
+  in
+    V 13
+      Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      (Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 7 p1 p2) p2)
 
 exampleI11E11 :: Text
 exampleI11E11 =
@@ -671,7 +705,18 @@ exampleI11E11 =
 
 resultI11E11 :: Layout
 resultI11E11 =
-  E 0
+  let
+    pt1 = " \t "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = " \t "
+    p2 = Prefix pt2
+    l2 = rel 7 $ Lex.lex $ pt2 <> "two\n"
+  in
+    V 13
+      Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      (Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 Empty p2)
 
 exampleI12E00 :: Text
 exampleI12E00 =
@@ -681,7 +726,16 @@ exampleI12E00 =
 
 resultI12E00 :: Layout
 resultI12E00 =
-  E 0
+  let
+    pt1 = "   "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "      "
+    p2 = Prefix pt2
+    l2 = rel 7 $ Lex.lex $ pt2 <> "two\n"
+  in
+    S 16 $
+      Run p1 (Cat.singleton l1 <> Cat.singleton l2) (l1 <> l2) Empty p2
 
 exampleI12E01 :: Text
 exampleI12E01 =
@@ -691,7 +745,18 @@ exampleI12E01 =
 
 resultI12E01 :: Layout
 resultI12E01 =
-  E 0
+  let
+    pt1 = "   "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = " \t    "
+    p2 = Prefix pt2
+    l2 = rel 7 $ Lex.lex $ pt2 <> "two\n"
+  in
+    V 16
+      Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      (Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton (LayoutMismatch 7 p1 p2)) p2)
 
 exampleI12E02 :: Text
 exampleI12E02 =
@@ -701,7 +766,16 @@ exampleI12E02 =
 
 resultI12E02 :: Layout
 resultI12E02 =
-  E 0
+  let
+    pt1 = "   "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "    \t "
+    p2 = Prefix pt2
+    l2 = rel 7 $ Lex.lex $ pt2 <> "two\n"
+  in
+    S 16 $
+      Run p1 (Cat.singleton l1 <> Cat.singleton l2) (l1 <> l2) Empty p2
 
 exampleI12E10 :: Text
 exampleI12E10 =
@@ -711,7 +785,18 @@ exampleI12E10 =
 
 resultI12E10 :: Layout
 resultI12E10 =
-  E 0
+  let
+    pt1 = " \t "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "      "
+    p2 = Prefix pt2
+    l2 = rel 7 $ Lex.lex $ pt2 <> "two\n"
+  in
+    V 16
+      Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      (Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton (LayoutMismatch 7 p1 p2)) p2)
 
 exampleI12E11 :: Text
 exampleI12E11 =
@@ -721,7 +806,16 @@ exampleI12E11 =
 
 resultI12E11 :: Layout
 resultI12E11 =
-  E 0
+  let
+    pt1 = " \t "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = " \t    "
+    p2 = Prefix pt2
+    l2 = rel 7 $ Lex.lex $ pt2 <> "two\n"
+  in
+    S 16 $
+      Run p1 (Cat.singleton l1 <> Cat.singleton l2) (l1 <> l2) Empty p2
 
 exampleI12E12 :: Text
 exampleI12E12 =
@@ -731,7 +825,18 @@ exampleI12E12 =
 
 resultI12E12 :: Layout
 resultI12E12 =
-  E 0
+  let
+    pt1 = " \t "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "    \t "
+    p2 = Prefix pt2
+    l2 = rel 7 $ Lex.lex $ pt2 <> "two\n"
+  in
+    V 16
+      Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      (Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton (LayoutMismatch 7 p1 p2)) p2)
 
 exampleI21E00 :: Text
 exampleI21E00 =
@@ -741,7 +846,18 @@ exampleI21E00 =
 
 resultI21E00 :: Layout
 resultI21E00 =
-  E 0
+  let
+    pt1 = "      "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "   "
+    p2 = Prefix pt2
+    l2 = rel 10 $ Lex.lex $ pt2 <> "two\n"
+  in
+    V 16
+      (Cat.singleton $ Run p1 (Cat.singleton l1) l1 Empty p1)
+      (Run p2 (Cat.singleton l2) l2 Empty p2)
+      Empty
 
 exampleI21E01 :: Text
 exampleI21E01 =
@@ -751,7 +867,18 @@ exampleI21E01 =
 
 resultI21E01 :: Layout
 resultI21E01 =
-  E 0
+  let
+    pt1 = "      "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = " \t "
+    p2 = Prefix pt2
+    l2 = rel 10 $ Lex.lex $ pt2 <> "two\n"
+  in
+    V 16
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      (Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 10 p1 p2) p2)
 
 exampleI21E10 :: Text
 exampleI21E10 =
@@ -761,7 +888,18 @@ exampleI21E10 =
 
 resultI21E10 :: Layout
 resultI21E10 =
-  E 0
+  let
+    pt1 = " \t    "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "   "
+    p2 = Prefix pt2
+    l2 = rel 10 $ Lex.lex $ pt2 <> "two\n"
+  in
+    V 16
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      (Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 10 p1 p2) p2)
 
 exampleI21E11 :: Text
 exampleI21E11 =
@@ -771,7 +909,18 @@ exampleI21E11 =
 
 resultI21E11 :: Layout
 resultI21E11 =
-  E 0
+  let
+    pt1 = " \t    "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = " \t "
+    p2 = Prefix pt2
+    l2 = rel 10 $ Lex.lex $ pt2 <> "two\n"
+  in
+    V 16
+      (Cat.singleton $ Run p1 (Cat.singleton l1) l1 Empty p1)
+      (Run p2 (Cat.singleton l2) l2 Empty p2)
+      Empty
 
 exampleI21E20 :: Text
 exampleI21E20 =
@@ -781,10 +930,18 @@ exampleI21E20 =
 
 resultI21E20 :: Layout
 resultI21E20 =
-  V 16
-    Empty
-    (mkRun "    \t one")
-    (rel 10 . Rev . Cat.singleton . runSnocMismatch (LayoutMismatch 0 "    \t " "   ") $ mkRun "   two")
+  let
+    pt1 = "    \t "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "   "
+    p2 = Prefix pt2
+    l2 = rel 10 $ Lex.lex $ pt2 <> "two\n"
+  in
+    V 16
+      (Cat.singleton $ Run p1 (Cat.singleton l1) l1 Empty p1)
+      (Run p2 (Cat.singleton l2) l2 Empty p2)
+       Empty
 
 exampleI21E21 :: Text
 exampleI21E21 =
@@ -794,10 +951,18 @@ exampleI21E21 =
 
 resultI21E21 :: Layout
 resultI21E21 =
-  V 16
-    Empty
-    (mkRun "    \t one")
-    (rel 10 . Rev . Cat.singleton . runSnocMismatch (LayoutMismatch 0 "    \t " " \t ") $ mkRun " \t two")
+  let
+    pt1 = "    \t "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = " \t "
+    p2 = Prefix pt2
+    l2 = rel 10 $ Lex.lex $ pt2 <> "two\n"
+  in
+    V 16
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      (Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 10 p1 p2) p2)
 
 exampleI22E00 :: Text
 exampleI22E00 =
@@ -807,10 +972,18 @@ exampleI22E00 =
 
 resultI22E00 :: Layout
 resultI22E00 =
-  V 19
-    Empty
-    (mkRun "      one")
-    (rel 10 . Rev . Cat.singleton $ mkRun "      two")
+  let
+    pt1 = "      "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "      "
+    p2 = Prefix pt2
+    l2 = rel 10 $ Lex.lex $ pt2 <> "two\n"
+  in
+    V 19
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      (Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 Empty p2)
 
 exampleI22E01 :: Text
 exampleI22E01 =
@@ -820,10 +993,18 @@ exampleI22E01 =
 
 resultI22E01 :: Layout
 resultI22E01 =
-  V 19
-    Empty
-    (mkRun "      one")
-    (rel 10 . Rev . Cat.singleton . runSnocMismatch (LayoutMismatch 0 "      " " \t    ") $ mkRun " \t    two")
+  let
+    pt1 = "      "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = " \t    "
+    p2 = Prefix pt2
+    l2 = rel 10 $ Lex.lex $ pt2 <> "two\n"
+  in
+    V 19
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      (Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 10 p1 p2) p2)
 
 exampleI22E02 :: Text
 exampleI22E02 =
@@ -833,10 +1014,18 @@ exampleI22E02 =
 
 resultI22E02 :: Layout
 resultI22E02 =
-  V 19
-    Empty
-    (mkRun "      one")
-    (rel 10 . Rev . Cat.singleton . runSnocMismatch (LayoutMismatch 0 "      " "    \t ") $ mkRun "    \t two")
+  let
+    pt1 = "      "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "    \t "
+    p2 = Prefix pt2
+    l2 = rel 10 $ Lex.lex $ pt2 <> "two\n"
+  in
+    V 19
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      (Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 10 p1 p2) p2)
 
 exampleI22E10 :: Text
 exampleI22E10 =
@@ -846,10 +1035,18 @@ exampleI22E10 =
 
 resultI22E10 :: Layout
 resultI22E10 =
-  V 19
-    Empty
-    (mkRun " \t    one")
-    (rel 10 . Rev . Cat.singleton . runSnocMismatch (LayoutMismatch 0 " \t    " "      ") $ mkRun "      two")
+  let
+    pt1 = " \t    "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "      "
+    p2 = Prefix pt2
+    l2 = rel 10 $ Lex.lex $ pt2 <> "two\n"
+  in
+    V 19
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      (Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 10 p1 p2) p2)
 
 exampleI22E11 :: Text
 exampleI22E11 =
@@ -859,10 +1056,18 @@ exampleI22E11 =
 
 resultI22E11 :: Layout
 resultI22E11 =
-  V 19
-    Empty
-    (mkRun " \t    one")
-    (rel 10 . Rev . Cat.singleton $ mkRun " \t    two")
+  let
+    pt1 = " \t    "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = " \t    "
+    p2 = Prefix pt2
+    l2 = rel 10 $ Lex.lex $ pt2 <> "two\n"
+  in
+    V 19
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      (Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 Empty p2)
 
 exampleI22E12 :: Text
 exampleI22E12 =
@@ -872,10 +1077,18 @@ exampleI22E12 =
 
 resultI22E12 :: Layout
 resultI22E12 =
-  V 19
-    Empty
-    (mkRun " \t    one")
-    (rel 10 . Rev . Cat.singleton . runSnocMismatch (LayoutMismatch 0 " \t    " "    \t ") $ mkRun "    \t two")
+  let
+    pt1 = " \t    "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "    \t "
+    p2 = Prefix pt2
+    l2 = rel 10 $ Lex.lex $ pt2 <> "two\n"
+  in
+    V 19
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      (Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 10 p1 p2) p2)
 
 exampleI22E20 :: Text
 exampleI22E20 =
@@ -885,10 +1098,18 @@ exampleI22E20 =
 
 resultI22E20 :: Layout
 resultI22E20 =
-  V 19
-    Empty
-    (mkRun "    \t one")
-    (rel 10 . Rev . Cat.singleton . runSnocMismatch (LayoutMismatch 0 "    \t " "      ") $ mkRun "      two")
+  let
+    pt1 = "    \t "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "      "
+    p2 = Prefix pt2
+    l2 = rel 10 $ Lex.lex $ pt2 <> "two\n"
+  in
+    V 19
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      (Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 10 p1 p2) p2)
 
 exampleI22E21 :: Text
 exampleI22E21 =
@@ -898,10 +1119,18 @@ exampleI22E21 =
 
 resultI22E21 :: Layout
 resultI22E21 =
-  V 19
-    Empty
-    (mkRun "    \t one")
-    (rel 10 . Rev . Cat.singleton . runSnocMismatch (LayoutMismatch 0 "    \t " " \t    ") $ mkRun " \t    two")
+  let
+    pt1 = "    \t "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = " \t    "
+    p2 = Prefix pt2
+    l2 = rel 10 $ Lex.lex $ pt2 <> "two\n"
+  in
+    V 19
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      (Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 10 p1 p2) p2)
 
 exampleI22E22 :: Text
 exampleI22E22 =
@@ -911,10 +1140,18 @@ exampleI22E22 =
 
 resultI22E22 :: Layout
 resultI22E22 =
-  V 19
-    Empty
-    (mkRun "    \t one")
-    (rel 10 . Rev . Cat.singleton $ mkRun "    \t two")
+  let
+    pt1 = "    \t "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "    \t "
+    p2 = Prefix pt2
+    l2 = rel 10 $ Lex.lex $ pt2 <> "two\n"
+  in
+    V 19
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      (Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 Empty p2)
 
 {-
 -- three
