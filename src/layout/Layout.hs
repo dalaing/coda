@@ -154,37 +154,37 @@ instance Semigroup Layout where
   E d <> V d' l m r = V (d <> d') (rel d l) (rel d m) (rel d r)
   S d m <> E d' = S (d <> d') m
   S d m@(Run p _ ts _ pr) <> S d' m'@(Run p' _ _ _ pr') =
-    trace "S <> S" $ case joinAndCompare pr p' >> joinAndCompare p p' of
+    case joinAndCompare pr p' >> joinAndCompare p p' of
       Left _ ->
-        trace "  Left _" $ V (d <> d') Empty m (Rev . Cat.singleton . rel d $ runSnocMismatch (LayoutMismatch 0 pr p') m')
+        V (d <> d') Empty m (Rev . Cat.singleton . rel d $ runSnocMismatch (LayoutMismatch 0 pr p') m')
       --        m
       --  m       m
       -- <>     <>
       -- m'      m'
       Right LT
         | boring ts ->
-          trace "  Right LT && boring ts" $ S (d <> d') (runMerge d m m')
+          S (d <> d') (runMerge d m m')
         | otherwise ->
-          trace "  Right LT" $ V (d <> d') Empty m (Rev (Cat.singleton (rel d m')))
+          V (d <> d') Empty m (Rev (Cat.singleton (rel d m')))
       --        m
       --  m      m
       -- <>     <>
       -- m'     m'
       Right EQ ->
-        trace "  Right EQ" $ V (d <> d') Empty m (Rev (Cat.singleton (rel d m')))
+        V (d <> d') Empty m (Rev (Cat.singleton (rel d m')))
       --         m
       --  m       m
       -- <>     <>
       -- m'     m'
       Right GT ->
-        trace "  Right GT" $ V (d <> d') (Cat.singleton m) (rel d m') Empty
+        V (d <> d') (Cat.singleton m) (rel d m') Empty
 
   S d m@(Run p ds ts es pr) <> V d' l' m'@(Run p' ds' ts' es' pr') r' =
-    trace "S <> V" $ case preview _Cons l' of
+    case preview _Cons l' of
       Nothing ->
-        trace "  l' empty" $ case joinAndCompare p p' of
+        case joinAndCompare p p' of
           Left _ ->
-            trace "  Left _ " $ V (d <> d') Empty m (rel d (Rev (Cat.singleton (runSnocMismatch (LayoutMismatch 0 pr p') m')) <> r'))
+            V (d <> d') Empty m (rel d (Rev (Cat.singleton (runSnocMismatch (LayoutMismatch 0 pr p') m')) <> r'))
           Right LT
             -- m
             --   m
@@ -192,7 +192,7 @@ instance Semigroup Layout where
             --  m'
             --    r'
             | boring ts ->
-              trace "  Right LT && boring" $ case preview _Snoc r' of
+              case preview _Snoc r' of
                 Nothing ->
                   S (d <> d') (runMerge d m m')
                 Just _ ->
@@ -204,37 +204,35 @@ instance Semigroup Layout where
                       Nothing -> S (d <> d') m_
                       Just _ -> V (d <> d') Empty m_ r'_
             | otherwise ->
-              trace "  Right LT" $ V (d <> d') Empty m (rel d (Rev (Cat.singleton m') <> r'))
+              V (d <> d') Empty m (rel d (Rev (Cat.singleton m') <> r'))
           Right EQ ->
             -- m
             --  m
             -- <>
             -- m'
             --   r'
-            trace "  Right EQ" $ V (d <> d') Empty m (rel d (Rev (Cat.singleton m') <> r'))
+            V (d <> d') Empty m (rel d (Rev (Cat.singleton m') <> r'))
           Right GT ->
             --  m
             --   m
             -- <>
             -- m'
             --   r'
-            trace "  Right GT" $ V (d <> d') (Cat.singleton m) (rel d m') (rel d r')
+            V (d <> d') (Cat.singleton m) (rel d m') (rel d r')
 
       Just (lh'@(Run p'' ds'' ts'' es'' pr''), lt') ->
-        trace "  l' non-empty" $ case (joinAndCompare p p', joinAndCompare p p'') of
+        case (joinAndCompare p p', joinAndCompare p p'') of
           (Left _, _) ->
-            trace "  Left _/_" $
-              -- V (d <> d') (Cat.singleton m <> rel d (Cat.singleton (runSnocMismatch (LayoutMismatch 0 pr p'') lh') <> lt')) (rel d m') (rel d r')
-              let
-                (m_, l'_, m'_, r_) = shuffle d m (Cat.singleton (runSnocMismatch (LayoutMismatch 0 pr p'') lh') <> lt') (Just m') r'
-                r'_ = (Rev (revCat l'_) <> maybe Empty (Rev . Cat.singleton) m'_ <> r_)
-              in
-                case preview _Snoc r'_ of
-                  Nothing -> S (d <> d') m_
-                  Just _ -> V (d <> d') Empty m_ r'_
+            -- V (d <> d') (Cat.singleton m <> rel d (Cat.singleton (runSnocMismatch (LayoutMismatch 0 pr p'') lh') <> lt')) (rel d m') (rel d r')
+            let
+              (m_, l'_, m'_, r_) = shuffle d m (Cat.singleton (runSnocMismatch (LayoutMismatch 0 pr p'') lh') <> lt') (Just m') r'
+              r'_ = (Rev (revCat l'_) <> maybe Empty (Rev . Cat.singleton) m'_ <> r_)
+            in
+              case preview _Snoc r'_ of
+                Nothing -> S (d <> d') m_
+                Just _ -> V (d <> d') Empty m_ r'_
           (_, Left _) ->
-            trace "  _/Left _" $
-              V (d <> d') (Cat.singleton m <> rel d (Cat.singleton (runSnocMismatch (LayoutMismatch 0 pr p'') lh') <> lt')) (rel d m') (rel d r')
+            V (d <> d') (Cat.singleton m <> rel d (Cat.singleton (runSnocMismatch (LayoutMismatch 0 pr p'') lh') <> lt')) (rel d m') (rel d r')
           (Right LT, _) ->
             -- m
             -- <>
@@ -245,7 +243,7 @@ instance Semigroup Layout where
               (m_, l'_, m'_, r_) = shuffle d m l' (Just m') r'
               r'_ = (Rev (revCat l'_) <> maybe Empty (Rev . Cat.singleton) m'_ <> r_)
             in
-              trace "  Right LT/_" $ case preview _Snoc r'_ of
+              case preview _Snoc r'_ of
                 Nothing -> S (d <> d') m_
                 Just _ -> V (d <> d') Empty m_ r'_
           (Right EQ, _) ->
@@ -260,7 +258,7 @@ instance Semigroup Layout where
                   Left _ -> shuffle d m (Cat.singleton (runSnocMismatch (LayoutMismatch 0 pr p'') lh') <> lt') Nothing Empty
                   Right _ -> shuffle d m l' Nothing Empty
             in
-              trace "  Right EQ/_" $ V (d <> d') Empty m_ (Rev (revCat l'_) <> rel d (Rev (Cat.singleton m') <> r'))
+              V (d <> d') Empty m_ (Rev (revCat l'_) <> rel d (Rev (Cat.singleton m') <> r'))
           (Right GT, Right LT) ->
             --  m
             -- <>
@@ -270,21 +268,21 @@ instance Semigroup Layout where
             let
               (m_, l'_, _, _) = shuffle d m l' Nothing Empty
             in
-              trace "  Right GT/Right EQ" $ V (d <> d') (Cat.singleton m_ <> l'_) (rel d m') (rel d r')
+              V (d <> d') (Cat.singleton m_ <> l'_) (rel d m') (rel d r')
           (Right GT, _) ->
             --  m
             -- <>
             --  l'
             -- m'
             --   r'
-            trace "  Right GT/_" $ V (d <> d') (Cat.singleton m <> rel d l') (rel d m') (rel d r')
+            V (d <> d') (Cat.singleton m <> rel d l') (rel d m') (rel d r')
 
   V d l m r <> E d' = V (d <> d') l m r
 
   V d l m@(Run p ds ts es pr) r <> S d' m'@(Run p' ds' ts' es' pr') =
-    trace "V <> S" $ case preview _Snoc r of
+    case preview _Snoc r of
       Nothing ->
-        trace "  r empty" $ case joinAndCompare p p' of
+        case joinAndCompare p p' of
           Left _ ->
             case joinAndCompare pr p' of
               Right LT | boring ts ->
@@ -297,65 +295,61 @@ instance Semigroup Layout where
             -- <>
             --  m'
             | boring ts ->
-              trace "  Right LT && boring" $ case joinAndCompare pr p' of
+              case joinAndCompare pr p' of
                 Left _ -> V (d <> d') l m (Rev (Cat.singleton (rel d (runSnocMismatch (LayoutMismatch 0 pr p') m'))))
                 Right _ ->
                   case preview _Cons l of
                     Nothing -> S (d <> d') (runMerge d m m')
                     Just _ -> V (d <> d') l (runMerge d m m') Empty
             | otherwise ->
-              trace "  Right LT" $ V (d <> d') l m (Rev (Cat.singleton (rel d m')))
+              V (d <> d') l m (Rev (Cat.singleton (rel d m')))
           Right EQ ->
             --  l
             -- m
             -- <>
             -- m'
-            trace "  Right EQ" $ V (d <> d') l m (Rev (Cat.singleton (rel d m')))
+            V (d <> d') l m (Rev (Cat.singleton (rel d m')))
           Right GT ->
             --   l
             --  m
             -- <>
             -- m'
-            trace "  Right GT" $ V (d <> d') (l <> Cat.singleton m) (rel d m') Empty
+            V (d <> d') (l <> Cat.singleton m) (rel d m') Empty
       Just (rt, rh@(Run p'' ds'' ts'' es'' pr'')) ->
-        trace "  r non-empty" $ case (joinAndCompare p p', joinAndCompare p'' p') of
+        case (joinAndCompare p p', joinAndCompare p'' p') of
           (Left _, _) ->
-            trace "  Left _/_ " . traceShow pr . traceShow p' $ case joinAndCompare pr'' p' of
+            case joinAndCompare pr'' p' of
               Right LT | boring ts ->
-                trace "    Right LT && boring" $ V (d <> d') l m (rt <> (Rev (Cat.singleton (runMerge d rh m'))))
+                V (d <> d') l m (rt <> (Rev (Cat.singleton (runMerge d rh m'))))
               Right LT ->
-                trace "    Right LT" $ V (d <> d') l m (r <> Rev (Cat.singleton (rel d m')))
+                V (d <> d') l m (r <> Rev (Cat.singleton (rel d m')))
               Right EQ ->
-                trace "    Right EQ" $ V (d <> d') l m (r <> Rev (Cat.singleton (rel d m')))
+                V (d <> d') l m (r <> Rev (Cat.singleton (rel d m')))
               Right GT ->
-                trace "    Right GT" $
-                  -- V (d <> d') (l <> Cat.singleton m <> revCat (runRev r)) (rel d m') Empty
-                  V (d <> d') l m (r <> Rev (Cat.singleton (rel d m')))
+                -- V (d <> d') (l <> Cat.singleton m <> revCat (runRev r)) (rel d m') Empty
+                V (d <> d') l m (r <> Rev (Cat.singleton (rel d m')))
               otherwise ->
-                trace "    _" $
-                  case preview _Cons l of
-                    Nothing ->
-                      V (d <> d') Empty m (r <> Rev (Cat.singleton (rel d (runSnocMismatch (LayoutMismatch 0 pr'' p') m'))))
-                    Just (lh, lt) ->
-                      V (d <> d') l m (r <> Rev (Cat.singleton (rel d (runSnocMismatch (LayoutMismatch 0 pr'' p') m'))))
+                case preview _Cons l of
+                  Nothing ->
+                    V (d <> d') Empty m (r <> Rev (Cat.singleton (rel d (runSnocMismatch (LayoutMismatch 0 pr'' p') m'))))
+                  Just (lh, lt) ->
+                    V (d <> d') l m (r <> Rev (Cat.singleton (rel d (runSnocMismatch (LayoutMismatch 0 pr'' p') m'))))
           (_, Left _) ->
-            trace "  _/Left _" $ case joinAndCompare pr'' p' of
+            case joinAndCompare pr'' p' of
               Right LT | boring ts ->
-                trace "    Right LT && boring" $ V (d <> d') l m (rt <> (Rev (Cat.singleton (runMerge d rh m'))))
+                V (d <> d') l m (rt <> (Rev (Cat.singleton (runMerge d rh m'))))
               Right LT ->
-                trace "    Right _" $ V (d <> d') l m (r <> Rev (Cat.singleton (rel d m')))
+                V (d <> d') l m (r <> Rev (Cat.singleton (rel d m')))
               Right EQ ->
-                trace "    Right _" $ V (d <> d') l m (r <> Rev (Cat.singleton (rel d m')))
+                V (d <> d') l m (r <> Rev (Cat.singleton (rel d m')))
               Right GT ->
-                trace "    Right _" $
-                  V (d <> d') l m (r <> Rev (Cat.singleton (rel d m')))
+                V (d <> d') l m (r <> Rev (Cat.singleton (rel d m')))
               otherwise ->
-                trace "    _" $
-                  case preview _Cons l of
-                    Nothing ->
-                      V (d <> d') Empty m (r <> Rev (Cat.singleton (rel d (runSnocMismatch (LayoutMismatch 0 pr'' p') m'))))
-                    Just (lh, lt) ->
-                      V (d <> d') l m (r <> Rev (Cat.singleton (rel d (runSnocMismatch (LayoutMismatch 0 pr'' p') m'))))
+                case preview _Cons l of
+                  Nothing ->
+                    V (d <> d') Empty m (r <> Rev (Cat.singleton (rel d (runSnocMismatch (LayoutMismatch 0 pr'' p') m'))))
+                  Just (lh, lt) ->
+                    V (d <> d') l m (r <> Rev (Cat.singleton (rel d (runSnocMismatch (LayoutMismatch 0 pr'' p') m'))))
           (Right LT, Right o)
             --  l
             -- m
@@ -363,25 +357,25 @@ instance Semigroup Layout where
             -- <>
             --  m'
             | boring ts'' && o == LT ->
-              trace "  Right LT && boring && LT inner" $ case joinAndCompare pr'' p' of
+              case joinAndCompare pr'' p' of
                 Left _ -> V (d <> d') l m (r <> Rev (Cat.singleton (rel d (runSnocMismatch (LayoutMismatch 0 pr'' p') m'))))
                 Right _ -> V (d <> d') l m (rt <> Rev (Cat.singleton (runMerge d rh m')))
             | otherwise ->
-              trace "  Right LT/_" $ V (d <> d') l m (r <> Rev (Cat.singleton (rel d m')))
+              V (d <> d') l m (r <> Rev (Cat.singleton (rel d m')))
           (Right EQ, _) ->
             --  l
             -- m
             --  r
             -- <>
             -- m'
-            trace "  Right EQ/_" $ V (d <> d') l m (r <> Rev (Cat.singleton (rel d m')))
+            V (d <> d') l m (r <> Rev (Cat.singleton (rel d m')))
           (Right GT, _) ->
             --   l
             --  m
             --   r
             -- <>
             -- m'
-            trace "  Right GT/_" $ V (d <> d') (l <> Cat.singleton m <> revCat (runRev r)) (rel d m') Empty
+            V (d <> d') (l <> Cat.singleton m <> revCat (runRev r)) (rel d m') Empty
 
   V d l m@(Run p ds ts es pr) r <> V d' l' m'@(Run p' ds' ts' es' pr') r' =
     trace "V <> V" $ case (preview _Snoc r, preview _Cons l') of
