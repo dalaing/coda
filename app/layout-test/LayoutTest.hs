@@ -7525,7 +7525,6 @@ exampleI323E323 =
 resultI323E323 :: Layout
 resultI323E323 = E 0
 
-
 exampleI331E000 :: Text
 exampleI331E000 =
   "         one\n\
@@ -7534,7 +7533,23 @@ exampleI331E000 =
   \"
 
 resultI331E000 :: Layout
-resultI331E000 = E 0
+resultI331E000 =
+  let
+    pt1 = "         "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "         "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = "   "
+    p3 = Prefix pt3
+    l3 = rel 26 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 34
+      ((Cat.singleton $ Run p1 (Cat.singleton l1) l1 Empty p1) <>
+       (Cat.singleton $ Run p2 (Cat.singleton l2) l2 Empty p2))
+      (Run p3 (Cat.singleton l3) l3 Empty p3)
+       Empty
 
 exampleI331E001 :: Text
 exampleI331E001 =
@@ -7544,7 +7559,23 @@ exampleI331E001 =
   \"
 
 resultI331E001 :: Layout
-resultI331E001 = E 0
+resultI331E001 =
+  let
+    pt1 = "         "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "         "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = " \t "
+    p3 = Prefix pt3
+    l3 = rel 26 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 34
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 Empty p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 (Cat.singleton $ LayoutMismatch 26 p2 p3) p3))
 
 exampleI331E010 :: Text
 exampleI331E010 =
@@ -7554,7 +7585,23 @@ exampleI331E010 =
   \"
 
 resultI331E010 :: Layout
-resultI331E010 = E 0
+resultI331E010 =
+  let
+    pt1 = "         "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = " \t       "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = "   "
+    p3 = Prefix pt3
+    l3 = rel 26 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 34
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 13 p1 p2) p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 (Cat.singleton $ LayoutMismatch 26 p2 p3) p3))
 
 exampleI331E011 :: Text
 exampleI331E011 =
@@ -7564,7 +7611,23 @@ exampleI331E011 =
   \"
 
 resultI331E011 :: Layout
-resultI331E011 = E 0
+resultI331E011 =
+  let
+    pt1 = "         "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = " \t       "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = " \t "
+    p3 = Prefix pt3
+    l3 = rel 26 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 34
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 13 p1 p2) p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 Empty p3))
 
 exampleI331E020 :: Text
 exampleI331E020 =
@@ -7574,7 +7637,23 @@ exampleI331E020 =
   \"
 
 resultI331E020 :: Layout
-resultI331E020 = E 0
+resultI331E020 =
+  let
+    pt1 = "         "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "    \t    "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = "   "
+    p3 = Prefix pt3
+    l3 = rel 26 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 34
+      ((Cat.singleton $ Run p1 (Cat.singleton l1) l1 Empty p1) <>
+       (Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 13 p1 p2) p2))
+      (Run p3 (Cat.singleton l3) l3 Empty p3)
+       Empty
 
 exampleI331E021 :: Text
 exampleI331E021 =
@@ -7584,7 +7663,23 @@ exampleI331E021 =
   \"
 
 resultI331E021 :: Layout
-resultI331E021 = E 0
+resultI331E021 =
+  let
+    pt1 = "         "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "    \t    "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = " \t "
+    p3 = Prefix pt3
+    l3 = rel 26 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 34
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 13 p1 p2) p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 (Cat.singleton $ LayoutMismatch 26 p2 p3) p3))
 
 exampleI331E030 :: Text
 exampleI331E030 =
@@ -7594,7 +7689,23 @@ exampleI331E030 =
   \"
 
 resultI331E030 :: Layout
-resultI331E030 = E 0
+resultI331E030 =
+  let
+    pt1 = "         "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "       \t "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = "   "
+    p3 = Prefix pt3
+    l3 = rel 26 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 34
+      ((Cat.singleton $ Run p1 (Cat.singleton l1) l1 Empty p1) <>
+       (Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 13 p1 p2) p2))
+      (Run p3 (Cat.singleton l3) l3 Empty p3)
+       Empty
 
 exampleI331E031 :: Text
 exampleI331E031 =
@@ -7604,7 +7715,23 @@ exampleI331E031 =
   \"
 
 resultI331E031 :: Layout
-resultI331E031 = E 0
+resultI331E031 =
+  let
+    pt1 = "         "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "       \t "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = " \t "
+    p3 = Prefix pt3
+    l3 = rel 26 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 34
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 13 p1 p2) p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 (Cat.singleton $ LayoutMismatch 26 p2 p3) p3))
 
 exampleI331E100 :: Text
 exampleI331E100 =
@@ -7614,7 +7741,23 @@ exampleI331E100 =
   \"
 
 resultI331E100 :: Layout
-resultI331E100 = E 0
+resultI331E100 =
+  let
+    pt1 = " \t       "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "         "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = "   "
+    p3 = Prefix pt3
+    l3 = rel 26 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 34
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 13 p1 p2) p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 Empty p3))
 
 exampleI331E101 :: Text
 exampleI331E101 =
@@ -7624,7 +7767,23 @@ exampleI331E101 =
   \"
 
 resultI331E101 :: Layout
-resultI331E101 = E 0
+resultI331E101 =
+  let
+    pt1 = " \t       "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "         "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = " \t "
+    p3 = Prefix pt3
+    l3 = rel 26 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 34
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 13 p1 p2) p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 (Cat.singleton $ LayoutMismatch 26 p2 p3) p3))
 
 exampleI331E110 :: Text
 exampleI331E110 =
@@ -7634,7 +7793,23 @@ exampleI331E110 =
   \"
 
 resultI331E110 :: Layout
-resultI331E110 = E 0
+resultI331E110 =
+  let
+    pt1 = " \t       "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = " \t       "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = "   "
+    p3 = Prefix pt3
+    l3 = rel 26 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 34
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 Empty p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 (Cat.singleton $ LayoutMismatch 26 p2 p3) p3))
 
 exampleI331E111 :: Text
 exampleI331E111 =
@@ -7644,7 +7819,23 @@ exampleI331E111 =
   \"
 
 resultI331E111 :: Layout
-resultI331E111 = E 0
+resultI331E111 =
+  let
+    pt1 = " \t       "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = " \t       "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = " \t "
+    p3 = Prefix pt3
+    l3 = rel 26 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 34
+      ((Cat.singleton $ Run p1 (Cat.singleton l1) l1 Empty p1) <>
+       (Cat.singleton $ Run p2 (Cat.singleton l2) l2 Empty p2))
+      (Run p3 (Cat.singleton l3) l3 Empty p3)
+       Empty
 
 exampleI331E120 :: Text
 exampleI331E120 =
@@ -7654,7 +7845,23 @@ exampleI331E120 =
   \"
 
 resultI331E120 :: Layout
-resultI331E120 = E 0
+resultI331E120 =
+  let
+    pt1 = " \t       "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "    \t    "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = "   "
+    p3 = Prefix pt3
+    l3 = rel 26 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 34
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 13 p1 p2) p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 Empty p3))
 
 exampleI331E121 :: Text
 exampleI331E121 =
@@ -7664,7 +7871,23 @@ exampleI331E121 =
   \"
 
 resultI331E121 :: Layout
-resultI331E121 = E 0
+resultI331E121 =
+  let
+    pt1 = " \t       "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "    \t    "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = " \t "
+    p3 = Prefix pt3
+    l3 = rel 26 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 34
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 13 p1 p2) p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 (Cat.singleton $ LayoutMismatch 26 p2 p3) p3))
 
 exampleI331E130 :: Text
 exampleI331E130 =
@@ -7674,7 +7897,23 @@ exampleI331E130 =
   \"
 
 resultI331E130 :: Layout
-resultI331E130 = E 0
+resultI331E130 =
+  let
+    pt1 = " \t       "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "       \t "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = "   "
+    p3 = Prefix pt3
+    l3 = rel 26 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 34
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 13 p1 p2) p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 Empty p3))
 
 exampleI331E131 :: Text
 exampleI331E131 =
@@ -7684,7 +7923,23 @@ exampleI331E131 =
   \"
 
 resultI331E131 :: Layout
-resultI331E131 = E 0
+resultI331E131 =
+  let
+    pt1 = " \t       "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "       \t "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = " \t "
+    p3 = Prefix pt3
+    l3 = rel 26 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 34
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 13 p1 p2) p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 (Cat.singleton $ LayoutMismatch 26 p2 p3) p3))
 
 exampleI331E200 :: Text
 exampleI331E200 =
@@ -7694,7 +7949,23 @@ exampleI331E200 =
   \"
 
 resultI331E200 :: Layout
-resultI331E200 = E 0
+resultI331E200 =
+  let
+    pt1 = "    \t    "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "         "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = "   "
+    p3 = Prefix pt3
+    l3 = rel 26 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 34
+      ((Cat.singleton $ Run p1 (Cat.singleton l1) l1 Empty p1) <>
+       (Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 13 p1 p2) p2))
+      (Run p3 (Cat.singleton l3) l3 Empty p3)
+       Empty
 
 exampleI331E201 :: Text
 exampleI331E201 =
@@ -7704,7 +7975,23 @@ exampleI331E201 =
   \"
 
 resultI331E201 :: Layout
-resultI331E201 = E 0
+resultI331E201 =
+  let
+    pt1 = "    \t    "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "         "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = " \t "
+    p3 = Prefix pt3
+    l3 = rel 26 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 34
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 13 p1 p2) p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 (Cat.singleton $ LayoutMismatch 26 p2 p3) p3))
 
 exampleI331E210 :: Text
 exampleI331E210 =
@@ -7714,7 +8001,23 @@ exampleI331E210 =
   \"
 
 resultI331E210 :: Layout
-resultI331E210 = E 0
+resultI331E210 =
+  let
+    pt1 = "    \t    "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = " \t       "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = "   "
+    p3 = Prefix pt3
+    l3 = rel 26 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 34
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 13 p1 p2) p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 (Cat.singleton $ LayoutMismatch 26 p2 p3) p3))
 
 exampleI331E211 :: Text
 exampleI331E211 =
@@ -7724,7 +8027,23 @@ exampleI331E211 =
   \"
 
 resultI331E211 :: Layout
-resultI331E211 = E 0
+resultI331E211 =
+  let
+    pt1 = "    \t    "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = " \t       "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = " \t "
+    p3 = Prefix pt3
+    l3 = rel 26 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 34
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 13 p1 p2) p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 Empty p3))
 
 exampleI331E220 :: Text
 exampleI331E220 =
@@ -7734,7 +8053,23 @@ exampleI331E220 =
   \"
 
 resultI331E220 :: Layout
-resultI331E220 = E 0
+resultI331E220 =
+  let
+    pt1 = "    \t    "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "    \t    "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = "   "
+    p3 = Prefix pt3
+    l3 = rel 26 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 34
+      ((Cat.singleton $ Run p1 (Cat.singleton l1) l1 Empty p1) <>
+       (Cat.singleton $ Run p2 (Cat.singleton l2) l2 Empty p2))
+      (Run p3 (Cat.singleton l3) l3 Empty p3)
+       Empty
 
 exampleI331E221 :: Text
 exampleI331E221 =
@@ -7744,7 +8079,23 @@ exampleI331E221 =
   \"
 
 resultI331E221 :: Layout
-resultI331E221 = E 0
+resultI331E221 =
+  let
+    pt1 = "    \t    "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "    \t    "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = " \t "
+    p3 = Prefix pt3
+    l3 = rel 26 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 34
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 Empty p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 (Cat.singleton $ LayoutMismatch 26 p2 p3) p3))
 
 exampleI331E230 :: Text
 exampleI331E230 =
@@ -7754,7 +8105,24 @@ exampleI331E230 =
   \"
 
 resultI331E230 :: Layout
-resultI331E230 = E 0
+resultI331E230 =
+  let
+    pt1 = "    \t    "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "       \t "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = "   "
+    p3 = Prefix pt3
+    l3 = rel 26 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 34
+      ((Cat.singleton $ Run p1 (Cat.singleton l1) l1 Empty p1) <>
+       (Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 13 p1 p2) p2))
+      (Run p3 (Cat.singleton l3) l3 Empty p3)
+       Empty
+
 
 exampleI331E231 :: Text
 exampleI331E231 =
@@ -7764,7 +8132,23 @@ exampleI331E231 =
   \"
 
 resultI331E231 :: Layout
-resultI331E231 = E 0
+resultI331E231 =
+  let
+    pt1 = "    \t    "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "       \t "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = " \t "
+    p3 = Prefix pt3
+    l3 = rel 26 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 34
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 13 p1 p2) p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 (Cat.singleton $ LayoutMismatch 26 p2 p3) p3))
 
 exampleI331E300 :: Text
 exampleI331E300 =
@@ -7774,7 +8158,23 @@ exampleI331E300 =
   \"
 
 resultI331E300 :: Layout
-resultI331E300 = E 0
+resultI331E300 =
+  let
+    pt1 = "       \t "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "         "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = "   "
+    p3 = Prefix pt3
+    l3 = rel 26 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 34
+      ((Cat.singleton $ Run p1 (Cat.singleton l1) l1 Empty p1) <>
+       (Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 13 p1 p2) p2))
+      (Run p3 (Cat.singleton l3) l3 Empty p3)
+       Empty
 
 exampleI331E301 :: Text
 exampleI331E301 =
@@ -7784,7 +8184,23 @@ exampleI331E301 =
   \"
 
 resultI331E301 :: Layout
-resultI331E301 = E 0
+resultI331E301 =
+  let
+    pt1 = "       \t "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "         "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = " \t "
+    p3 = Prefix pt3
+    l3 = rel 26 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 34
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 13 p1 p2) p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 (Cat.singleton $ LayoutMismatch 26 p2 p3) p3))
 
 exampleI331E310 :: Text
 exampleI331E310 =
@@ -7794,7 +8210,23 @@ exampleI331E310 =
   \"
 
 resultI331E310 :: Layout
-resultI331E310 = E 0
+resultI331E310 =
+  let
+    pt1 = "       \t "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = " \t       "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = "   "
+    p3 = Prefix pt3
+    l3 = rel 26 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 34
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 13 p1 p2) p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 (Cat.singleton $ LayoutMismatch 26 p2 p3) p3))
 
 exampleI331E311 :: Text
 exampleI331E311 =
@@ -7804,7 +8236,23 @@ exampleI331E311 =
   \"
 
 resultI331E311 :: Layout
-resultI331E311 = E 0
+resultI331E311 =
+  let
+    pt1 = "       \t "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = " \t       "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = " \t "
+    p3 = Prefix pt3
+    l3 = rel 26 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 34
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 13 p1 p2) p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 Empty p3))
 
 exampleI331E320 :: Text
 exampleI331E320 =
@@ -7814,7 +8262,23 @@ exampleI331E320 =
   \"
 
 resultI331E320 :: Layout
-resultI331E320 = E 0
+resultI331E320 =
+  let
+    pt1 = "       \t "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "    \t    "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = "   "
+    p3 = Prefix pt3
+    l3 = rel 26 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 34
+      ((Cat.singleton $ Run p1 (Cat.singleton l1) l1 Empty p1) <>
+       (Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 13 p1 p2) p2))
+      (Run p3 (Cat.singleton l3) l3 Empty p3)
+       Empty
 
 exampleI331E321 :: Text
 exampleI331E321 =
@@ -11428,150 +11892,150 @@ test_layout_example =
     , testCase "I323E321"  $ assertAllEqTo exampleI323E321 resultI323E321
     , testCase "I323E322"  $ assertAllEqTo exampleI323E322 resultI323E322
     , testCase "I323E323"  $ assertAllEqTo exampleI323E323 resultI323E323
-    , testCase "I331E000"  $ assertAllEqTo exampleI331E000 resultI331E000
-    , testCase "I331E001"  $ assertAllEqTo exampleI331E001 resultI331E001
-    , testCase "I331E010"  $ assertAllEqTo exampleI331E010 resultI331E010
-    , testCase "I331E011"  $ assertAllEqTo exampleI331E011 resultI331E011
-    , testCase "I331E020"  $ assertAllEqTo exampleI331E020 resultI331E020
-    , testCase "I331E021"  $ assertAllEqTo exampleI331E021 resultI331E021
-    , testCase "I331E030"  $ assertAllEqTo exampleI331E030 resultI331E030
-    , testCase "I331E031"  $ assertAllEqTo exampleI331E031 resultI331E031
-    , testCase "I331E100"  $ assertAllEqTo exampleI331E100 resultI331E100
-    , testCase "I331E101"  $ assertAllEqTo exampleI331E101 resultI331E101
-    , testCase "I331E110"  $ assertAllEqTo exampleI331E110 resultI331E110
-    , testCase "I331E111"  $ assertAllEqTo exampleI331E111 resultI331E111
-    , testCase "I331E120"  $ assertAllEqTo exampleI331E120 resultI331E120
-    , testCase "I331E121"  $ assertAllEqTo exampleI331E121 resultI331E121
-    , testCase "I331E130"  $ assertAllEqTo exampleI331E130 resultI331E130
-    , testCase "I331E131"  $ assertAllEqTo exampleI331E131 resultI331E131
-    , testCase "I331E200"  $ assertAllEqTo exampleI331E200 resultI331E200
-    , testCase "I331E201"  $ assertAllEqTo exampleI331E201 resultI331E201
-    , testCase "I331E210"  $ assertAllEqTo exampleI331E210 resultI331E210
-    , testCase "I331E211"  $ assertAllEqTo exampleI331E211 resultI331E211
-    , testCase "I331E220"  $ assertAllEqTo exampleI331E220 resultI331E220
-    , testCase "I331E221"  $ assertAllEqTo exampleI331E221 resultI331E221
-    , testCase "I331E230"  $ assertAllEqTo exampleI331E230 resultI331E230
-    , testCase "I331E231"  $ assertAllEqTo exampleI331E231 resultI331E231
-    , testCase "I331E300"  $ assertAllEqTo exampleI331E300 resultI331E300
-    , testCase "I331E301"  $ assertAllEqTo exampleI331E301 resultI331E301
-    , testCase "I331E310"  $ assertAllEqTo exampleI331E310 resultI331E310
-    , testCase "I331E311"  $ assertAllEqTo exampleI331E311 resultI331E311
-    , testCase "I331E320"  $ assertAllEqTo exampleI331E320 resultI331E320
-    , testCase "I331E321"  $ assertAllEqTo exampleI331E321 resultI331E321
-    , testCase "I331E330"  $ assertAllEqTo exampleI331E330 resultI331E330
-    , testCase "I331E331"  $ assertAllEqTo exampleI331E331 resultI331E331
-    , testCase "I332E000"  $ assertAllEqTo exampleI332E000 resultI332E000
-    , testCase "I332E001"  $ assertAllEqTo exampleI332E001 resultI332E001
-    , testCase "I332E002"  $ assertAllEqTo exampleI332E002 resultI332E002
-    , testCase "I332E010"  $ assertAllEqTo exampleI332E010 resultI332E010
-    , testCase "I332E011"  $ assertAllEqTo exampleI332E011 resultI332E011
-    , testCase "I332E012"  $ assertAllEqTo exampleI332E012 resultI332E012
-    , testCase "I332E020"  $ assertAllEqTo exampleI332E020 resultI332E020
-    , testCase "I332E021"  $ assertAllEqTo exampleI332E021 resultI332E021
-    , testCase "I332E022"  $ assertAllEqTo exampleI332E022 resultI332E022
-    , testCase "I332E030"  $ assertAllEqTo exampleI332E030 resultI332E030
-    , testCase "I332E031"  $ assertAllEqTo exampleI332E031 resultI332E031
-    , testCase "I332E032"  $ assertAllEqTo exampleI332E032 resultI332E032
-    , testCase "I332E100"  $ assertAllEqTo exampleI332E100 resultI332E100
-    , testCase "I332E101"  $ assertAllEqTo exampleI332E101 resultI332E101
-    , testCase "I332E102"  $ assertAllEqTo exampleI332E102 resultI332E102
-    , testCase "I332E110"  $ assertAllEqTo exampleI332E110 resultI332E110
-    , testCase "I332E111"  $ assertAllEqTo exampleI332E111 resultI332E111
-    , testCase "I332E112"  $ assertAllEqTo exampleI332E112 resultI332E112
-    , testCase "I332E120"  $ assertAllEqTo exampleI332E120 resultI332E120
-    , testCase "I332E121"  $ assertAllEqTo exampleI332E121 resultI332E121
-    , testCase "I332E122"  $ assertAllEqTo exampleI332E122 resultI332E122
-    , testCase "I332E130"  $ assertAllEqTo exampleI332E130 resultI332E130
-    , testCase "I332E131"  $ assertAllEqTo exampleI332E131 resultI332E131
-    , testCase "I332E132"  $ assertAllEqTo exampleI332E132 resultI332E132
-    , testCase "I332E200"  $ assertAllEqTo exampleI332E200 resultI332E200
-    , testCase "I332E201"  $ assertAllEqTo exampleI332E201 resultI332E201
-    , testCase "I332E202"  $ assertAllEqTo exampleI332E202 resultI332E202
-    , testCase "I332E210"  $ assertAllEqTo exampleI332E210 resultI332E210
-    , testCase "I332E211"  $ assertAllEqTo exampleI332E211 resultI332E211
-    , testCase "I332E212"  $ assertAllEqTo exampleI332E212 resultI332E212
-    , testCase "I332E220"  $ assertAllEqTo exampleI332E220 resultI332E220
-    , testCase "I332E221"  $ assertAllEqTo exampleI332E221 resultI332E221
-    , testCase "I332E222"  $ assertAllEqTo exampleI332E222 resultI332E222
-    , testCase "I332E230"  $ assertAllEqTo exampleI332E230 resultI332E230
-    , testCase "I332E231"  $ assertAllEqTo exampleI332E231 resultI332E231
-    , testCase "I332E232"  $ assertAllEqTo exampleI332E232 resultI332E232
-    , testCase "I332E300"  $ assertAllEqTo exampleI332E300 resultI332E300
-    , testCase "I332E301"  $ assertAllEqTo exampleI332E301 resultI332E301
-    , testCase "I332E302"  $ assertAllEqTo exampleI332E302 resultI332E302
-    , testCase "I332E310"  $ assertAllEqTo exampleI332E310 resultI332E310
-    , testCase "I332E311"  $ assertAllEqTo exampleI332E311 resultI332E311
-    , testCase "I332E312"  $ assertAllEqTo exampleI332E312 resultI332E312
-    , testCase "I332E320"  $ assertAllEqTo exampleI332E320 resultI332E320
-    , testCase "I332E321"  $ assertAllEqTo exampleI332E321 resultI332E321
-    , testCase "I332E322"  $ assertAllEqTo exampleI332E322 resultI332E322
-    , testCase "I332E330"  $ assertAllEqTo exampleI332E330 resultI332E330
-    , testCase "I332E331"  $ assertAllEqTo exampleI332E331 resultI332E331
-    , testCase "I332E332"  $ assertAllEqTo exampleI332E332 resultI332E332
-    , testCase "I333E000"  $ assertAllEqTo exampleI333E000 resultI333E000
-    , testCase "I333E001"  $ assertAllEqTo exampleI333E001 resultI333E001
-    , testCase "I333E002"  $ assertAllEqTo exampleI333E002 resultI333E002
-    , testCase "I333E003"  $ assertAllEqTo exampleI333E003 resultI333E003
-    , testCase "I333E010"  $ assertAllEqTo exampleI333E010 resultI333E010
-    , testCase "I333E011"  $ assertAllEqTo exampleI333E011 resultI333E011
-    , testCase "I333E012"  $ assertAllEqTo exampleI333E012 resultI333E012
-    , testCase "I333E013"  $ assertAllEqTo exampleI333E013 resultI333E013
-    , testCase "I333E020"  $ assertAllEqTo exampleI333E020 resultI333E020
-    , testCase "I333E021"  $ assertAllEqTo exampleI333E021 resultI333E021
-    , testCase "I333E022"  $ assertAllEqTo exampleI333E022 resultI333E022
-    , testCase "I333E023"  $ assertAllEqTo exampleI333E023 resultI333E023
-    , testCase "I333E030"  $ assertAllEqTo exampleI333E030 resultI333E030
-    , testCase "I333E031"  $ assertAllEqTo exampleI333E031 resultI333E031
-    , testCase "I333E032"  $ assertAllEqTo exampleI333E032 resultI333E032
-    , testCase "I333E033"  $ assertAllEqTo exampleI333E033 resultI333E033
-    , testCase "I333E100"  $ assertAllEqTo exampleI333E100 resultI333E100
-    , testCase "I333E101"  $ assertAllEqTo exampleI333E101 resultI333E101
-    , testCase "I333E102"  $ assertAllEqTo exampleI333E102 resultI333E102
-    , testCase "I333E103"  $ assertAllEqTo exampleI333E103 resultI333E103
-    , testCase "I333E110"  $ assertAllEqTo exampleI333E110 resultI333E110
-    , testCase "I333E111"  $ assertAllEqTo exampleI333E111 resultI333E111
-    , testCase "I333E112"  $ assertAllEqTo exampleI333E112 resultI333E112
-    , testCase "I333E113"  $ assertAllEqTo exampleI333E113 resultI333E113
-    , testCase "I333E120"  $ assertAllEqTo exampleI333E120 resultI333E120
-    , testCase "I333E121"  $ assertAllEqTo exampleI333E121 resultI333E121
-    , testCase "I333E122"  $ assertAllEqTo exampleI333E122 resultI333E122
-    , testCase "I333E123"  $ assertAllEqTo exampleI333E123 resultI333E123
-    , testCase "I333E130"  $ assertAllEqTo exampleI333E130 resultI333E130
-    , testCase "I333E131"  $ assertAllEqTo exampleI333E131 resultI333E131
-    , testCase "I333E132"  $ assertAllEqTo exampleI333E132 resultI333E132
-    , testCase "I333E133"  $ assertAllEqTo exampleI333E133 resultI333E133
-    , testCase "I333E200"  $ assertAllEqTo exampleI333E200 resultI333E200
-    , testCase "I333E201"  $ assertAllEqTo exampleI333E201 resultI333E201
-    , testCase "I333E202"  $ assertAllEqTo exampleI333E202 resultI333E202
-    , testCase "I333E203"  $ assertAllEqTo exampleI333E203 resultI333E203
-    , testCase "I333E210"  $ assertAllEqTo exampleI333E210 resultI333E210
-    , testCase "I333E211"  $ assertAllEqTo exampleI333E211 resultI333E211
-    , testCase "I333E212"  $ assertAllEqTo exampleI333E212 resultI333E212
-    , testCase "I333E213"  $ assertAllEqTo exampleI333E213 resultI333E213
-    , testCase "I333E220"  $ assertAllEqTo exampleI333E220 resultI333E220
-    , testCase "I333E221"  $ assertAllEqTo exampleI333E221 resultI333E221
-    , testCase "I333E222"  $ assertAllEqTo exampleI333E222 resultI333E222
-    , testCase "I333E223"  $ assertAllEqTo exampleI333E223 resultI333E223
-    , testCase "I333E230"  $ assertAllEqTo exampleI333E230 resultI333E230
-    , testCase "I333E231"  $ assertAllEqTo exampleI333E231 resultI333E231
-    , testCase "I333E232"  $ assertAllEqTo exampleI333E232 resultI333E232
-    , testCase "I333E233"  $ assertAllEqTo exampleI333E233 resultI333E233
-    , testCase "I333E300"  $ assertAllEqTo exampleI333E300 resultI333E300
-    , testCase "I333E301"  $ assertAllEqTo exampleI333E301 resultI333E301
-    , testCase "I333E302"  $ assertAllEqTo exampleI333E302 resultI333E302
-    , testCase "I333E303"  $ assertAllEqTo exampleI333E303 resultI333E303
-    , testCase "I333E310"  $ assertAllEqTo exampleI333E310 resultI333E310
-    , testCase "I333E311"  $ assertAllEqTo exampleI333E311 resultI333E311
-    , testCase "I333E312"  $ assertAllEqTo exampleI333E312 resultI333E312
-    , testCase "I333E313"  $ assertAllEqTo exampleI333E313 resultI333E313
-    , testCase "I333E320"  $ assertAllEqTo exampleI333E320 resultI333E320
-    , testCase "I333E321"  $ assertAllEqTo exampleI333E321 resultI333E321
-    , testCase "I333E322"  $ assertAllEqTo exampleI333E322 resultI333E322
-    , testCase "I333E323"  $ assertAllEqTo exampleI333E323 resultI333E323
-    , testCase "I333E330"  $ assertAllEqTo exampleI333E330 resultI333E330
-    , testCase "I333E331"  $ assertAllEqTo exampleI333E331 resultI333E331
-    , testCase "I333E332"  $ assertAllEqTo exampleI333E332 resultI333E332
-    , testCase "I333E333"  $ assertAllEqTo exampleI333E333 resultI333E333
+    -- , testCase "I331E000"  $ assertAllEqTo exampleI331E000 resultI331E000
+    -- , testCase "I331E001"  $ assertAllEqTo exampleI331E001 resultI331E001
+    -- , testCase "I331E010"  $ assertAllEqTo exampleI331E010 resultI331E010
+    -- , testCase "I331E011"  $ assertAllEqTo exampleI331E011 resultI331E011
+    -- , testCase "I331E020"  $ assertAllEqTo exampleI331E020 resultI331E020
+    -- , testCase "I331E021"  $ assertAllEqTo exampleI331E021 resultI331E021
+    -- , testCase "I331E030"  $ assertAllEqTo exampleI331E030 resultI331E030
+    -- , testCase "I331E031"  $ assertAllEqTo exampleI331E031 resultI331E031
+    -- , testCase "I331E100"  $ assertAllEqTo exampleI331E100 resultI331E100
+    -- , testCase "I331E101"  $ assertAllEqTo exampleI331E101 resultI331E101
+    -- , testCase "I331E110"  $ assertAllEqTo exampleI331E110 resultI331E110
+    -- , testCase "I331E111"  $ assertAllEqTo exampleI331E111 resultI331E111
+    -- , testCase "I331E120"  $ assertAllEqTo exampleI331E120 resultI331E120
+    -- , testCase "I331E121"  $ assertAllEqTo exampleI331E121 resultI331E121
+    -- , testCase "I331E130"  $ assertAllEqTo exampleI331E130 resultI331E130
+    -- , testCase "I331E131"  $ assertAllEqTo exampleI331E131 resultI331E131
+    -- , testCase "I331E200"  $ assertAllEqTo exampleI331E200 resultI331E200
+    -- , testCase "I331E201"  $ assertAllEqTo exampleI331E201 resultI331E201
+    -- , testCase "I331E210"  $ assertAllEqTo exampleI331E210 resultI331E210
+    -- , testCase "I331E211"  $ assertAllEqTo exampleI331E211 resultI331E211
+    -- , testCase "I331E220"  $ assertAllEqTo exampleI331E220 resultI331E220
+    -- , testCase "I331E221"  $ assertAllEqTo exampleI331E221 resultI331E221
+    -- , testCase "I331E230"  $ assertAllEqTo exampleI331E230 resultI331E230
+    -- , testCase "I331E231"  $ assertAllEqTo exampleI331E231 resultI331E231
+    -- , testCase "I331E300"  $ assertAllEqTo exampleI331E300 resultI331E300
+    -- , testCase "I331E301"  $ assertAllEqTo exampleI331E301 resultI331E301
+    -- , testCase "I331E310"  $ assertAllEqTo exampleI331E310 resultI331E310
+    -- , testCase "I331E311"  $ assertAllEqTo exampleI331E311 resultI331E311
+    -- , testCase "I331E320"  $ assertAllEqTo exampleI331E320 resultI331E320
+    -- , testCase "I331E321"  $ assertAllEqTo exampleI331E321 resultI331E321
+    -- , testCase "I331E330"  $ assertAllEqTo exampleI331E330 resultI331E330
+    -- , testCase "I331E331"  $ assertAllEqTo exampleI331E331 resultI331E331
+    -- , testCase "I332E000"  $ assertAllEqTo exampleI332E000 resultI332E000
+    -- , testCase "I332E001"  $ assertAllEqTo exampleI332E001 resultI332E001
+    -- , testCase "I332E002"  $ assertAllEqTo exampleI332E002 resultI332E002
+    -- , testCase "I332E010"  $ assertAllEqTo exampleI332E010 resultI332E010
+    -- , testCase "I332E011"  $ assertAllEqTo exampleI332E011 resultI332E011
+    -- , testCase "I332E012"  $ assertAllEqTo exampleI332E012 resultI332E012
+    -- , testCase "I332E020"  $ assertAllEqTo exampleI332E020 resultI332E020
+    -- , testCase "I332E021"  $ assertAllEqTo exampleI332E021 resultI332E021
+    -- , testCase "I332E022"  $ assertAllEqTo exampleI332E022 resultI332E022
+    -- , testCase "I332E030"  $ assertAllEqTo exampleI332E030 resultI332E030
+    -- , testCase "I332E031"  $ assertAllEqTo exampleI332E031 resultI332E031
+    -- , testCase "I332E032"  $ assertAllEqTo exampleI332E032 resultI332E032
+    -- , testCase "I332E100"  $ assertAllEqTo exampleI332E100 resultI332E100
+    -- , testCase "I332E101"  $ assertAllEqTo exampleI332E101 resultI332E101
+    -- , testCase "I332E102"  $ assertAllEqTo exampleI332E102 resultI332E102
+    -- , testCase "I332E110"  $ assertAllEqTo exampleI332E110 resultI332E110
+    -- , testCase "I332E111"  $ assertAllEqTo exampleI332E111 resultI332E111
+    -- , testCase "I332E112"  $ assertAllEqTo exampleI332E112 resultI332E112
+    -- , testCase "I332E120"  $ assertAllEqTo exampleI332E120 resultI332E120
+    -- , testCase "I332E121"  $ assertAllEqTo exampleI332E121 resultI332E121
+    -- , testCase "I332E122"  $ assertAllEqTo exampleI332E122 resultI332E122
+    -- , testCase "I332E130"  $ assertAllEqTo exampleI332E130 resultI332E130
+    -- , testCase "I332E131"  $ assertAllEqTo exampleI332E131 resultI332E131
+    -- , testCase "I332E132"  $ assertAllEqTo exampleI332E132 resultI332E132
+    -- , testCase "I332E200"  $ assertAllEqTo exampleI332E200 resultI332E200
+    -- , testCase "I332E201"  $ assertAllEqTo exampleI332E201 resultI332E201
+    -- , testCase "I332E202"  $ assertAllEqTo exampleI332E202 resultI332E202
+    -- , testCase "I332E210"  $ assertAllEqTo exampleI332E210 resultI332E210
+    -- , testCase "I332E211"  $ assertAllEqTo exampleI332E211 resultI332E211
+    -- , testCase "I332E212"  $ assertAllEqTo exampleI332E212 resultI332E212
+    -- , testCase "I332E220"  $ assertAllEqTo exampleI332E220 resultI332E220
+    -- , testCase "I332E221"  $ assertAllEqTo exampleI332E221 resultI332E221
+    -- , testCase "I332E222"  $ assertAllEqTo exampleI332E222 resultI332E222
+    -- , testCase "I332E230"  $ assertAllEqTo exampleI332E230 resultI332E230
+    -- , testCase "I332E231"  $ assertAllEqTo exampleI332E231 resultI332E231
+    -- , testCase "I332E232"  $ assertAllEqTo exampleI332E232 resultI332E232
+    -- , testCase "I332E300"  $ assertAllEqTo exampleI332E300 resultI332E300
+    -- , testCase "I332E301"  $ assertAllEqTo exampleI332E301 resultI332E301
+    -- , testCase "I332E302"  $ assertAllEqTo exampleI332E302 resultI332E302
+    -- , testCase "I332E310"  $ assertAllEqTo exampleI332E310 resultI332E310
+    -- , testCase "I332E311"  $ assertAllEqTo exampleI332E311 resultI332E311
+    -- , testCase "I332E312"  $ assertAllEqTo exampleI332E312 resultI332E312
+    -- , testCase "I332E320"  $ assertAllEqTo exampleI332E320 resultI332E320
+    -- , testCase "I332E321"  $ assertAllEqTo exampleI332E321 resultI332E321
+    -- , testCase "I332E322"  $ assertAllEqTo exampleI332E322 resultI332E322
+    -- , testCase "I332E330"  $ assertAllEqTo exampleI332E330 resultI332E330
+    -- , testCase "I332E331"  $ assertAllEqTo exampleI332E331 resultI332E331
+    -- , testCase "I332E332"  $ assertAllEqTo exampleI332E332 resultI332E332
+    -- , testCase "I333E000"  $ assertAllEqTo exampleI333E000 resultI333E000
+    -- , testCase "I333E001"  $ assertAllEqTo exampleI333E001 resultI333E001
+    -- , testCase "I333E002"  $ assertAllEqTo exampleI333E002 resultI333E002
+    -- , testCase "I333E003"  $ assertAllEqTo exampleI333E003 resultI333E003
+    -- , testCase "I333E010"  $ assertAllEqTo exampleI333E010 resultI333E010
+    -- , testCase "I333E011"  $ assertAllEqTo exampleI333E011 resultI333E011
+    -- , testCase "I333E012"  $ assertAllEqTo exampleI333E012 resultI333E012
+    -- , testCase "I333E013"  $ assertAllEqTo exampleI333E013 resultI333E013
+    -- , testCase "I333E020"  $ assertAllEqTo exampleI333E020 resultI333E020
+    -- , testCase "I333E021"  $ assertAllEqTo exampleI333E021 resultI333E021
+    -- , testCase "I333E022"  $ assertAllEqTo exampleI333E022 resultI333E022
+    -- , testCase "I333E023"  $ assertAllEqTo exampleI333E023 resultI333E023
+    -- , testCase "I333E030"  $ assertAllEqTo exampleI333E030 resultI333E030
+    -- , testCase "I333E031"  $ assertAllEqTo exampleI333E031 resultI333E031
+    -- , testCase "I333E032"  $ assertAllEqTo exampleI333E032 resultI333E032
+    -- , testCase "I333E033"  $ assertAllEqTo exampleI333E033 resultI333E033
+    -- , testCase "I333E100"  $ assertAllEqTo exampleI333E100 resultI333E100
+    -- , testCase "I333E101"  $ assertAllEqTo exampleI333E101 resultI333E101
+    -- , testCase "I333E102"  $ assertAllEqTo exampleI333E102 resultI333E102
+    -- , testCase "I333E103"  $ assertAllEqTo exampleI333E103 resultI333E103
+    -- , testCase "I333E110"  $ assertAllEqTo exampleI333E110 resultI333E110
+    -- , testCase "I333E111"  $ assertAllEqTo exampleI333E111 resultI333E111
+    -- , testCase "I333E112"  $ assertAllEqTo exampleI333E112 resultI333E112
+    -- , testCase "I333E113"  $ assertAllEqTo exampleI333E113 resultI333E113
+    -- , testCase "I333E120"  $ assertAllEqTo exampleI333E120 resultI333E120
+    -- , testCase "I333E121"  $ assertAllEqTo exampleI333E121 resultI333E121
+    -- , testCase "I333E122"  $ assertAllEqTo exampleI333E122 resultI333E122
+    -- , testCase "I333E123"  $ assertAllEqTo exampleI333E123 resultI333E123
+    -- , testCase "I333E130"  $ assertAllEqTo exampleI333E130 resultI333E130
+    -- , testCase "I333E131"  $ assertAllEqTo exampleI333E131 resultI333E131
+    -- , testCase "I333E132"  $ assertAllEqTo exampleI333E132 resultI333E132
+    -- , testCase "I333E133"  $ assertAllEqTo exampleI333E133 resultI333E133
+    -- , testCase "I333E200"  $ assertAllEqTo exampleI333E200 resultI333E200
+    -- , testCase "I333E201"  $ assertAllEqTo exampleI333E201 resultI333E201
+    -- , testCase "I333E202"  $ assertAllEqTo exampleI333E202 resultI333E202
+    -- , testCase "I333E203"  $ assertAllEqTo exampleI333E203 resultI333E203
+    -- , testCase "I333E210"  $ assertAllEqTo exampleI333E210 resultI333E210
+    -- , testCase "I333E211"  $ assertAllEqTo exampleI333E211 resultI333E211
+    -- , testCase "I333E212"  $ assertAllEqTo exampleI333E212 resultI333E212
+    -- , testCase "I333E213"  $ assertAllEqTo exampleI333E213 resultI333E213
+    -- , testCase "I333E220"  $ assertAllEqTo exampleI333E220 resultI333E220
+    -- , testCase "I333E221"  $ assertAllEqTo exampleI333E221 resultI333E221
+    -- , testCase "I333E222"  $ assertAllEqTo exampleI333E222 resultI333E222
+    -- , testCase "I333E223"  $ assertAllEqTo exampleI333E223 resultI333E223
+    -- , testCase "I333E230"  $ assertAllEqTo exampleI333E230 resultI333E230
+    -- , testCase "I333E231"  $ assertAllEqTo exampleI333E231 resultI333E231
+    -- , testCase "I333E232"  $ assertAllEqTo exampleI333E232 resultI333E232
+    -- , testCase "I333E233"  $ assertAllEqTo exampleI333E233 resultI333E233
+    -- , testCase "I333E300"  $ assertAllEqTo exampleI333E300 resultI333E300
+    -- , testCase "I333E301"  $ assertAllEqTo exampleI333E301 resultI333E301
+    -- , testCase "I333E302"  $ assertAllEqTo exampleI333E302 resultI333E302
+    -- , testCase "I333E303"  $ assertAllEqTo exampleI333E303 resultI333E303
+    -- , testCase "I333E310"  $ assertAllEqTo exampleI333E310 resultI333E310
+    -- , testCase "I333E311"  $ assertAllEqTo exampleI333E311 resultI333E311
+    -- , testCase "I333E312"  $ assertAllEqTo exampleI333E312 resultI333E312
+    -- , testCase "I333E313"  $ assertAllEqTo exampleI333E313 resultI333E313
+    -- , testCase "I333E320"  $ assertAllEqTo exampleI333E320 resultI333E320
+    -- , testCase "I333E321"  $ assertAllEqTo exampleI333E321 resultI333E321
+    -- , testCase "I333E322"  $ assertAllEqTo exampleI333E322 resultI333E322
+    -- , testCase "I333E323"  $ assertAllEqTo exampleI333E323 resultI333E323
+    -- , testCase "I333E330"  $ assertAllEqTo exampleI333E330 resultI333E330
+    -- , testCase "I333E331"  $ assertAllEqTo exampleI333E331 resultI333E331
+    -- , testCase "I333E332"  $ assertAllEqTo exampleI333E332 resultI333E332
+    -- , testCase "I333E333"  $ assertAllEqTo exampleI333E333 resultI333E333
     ]
   ]
 
