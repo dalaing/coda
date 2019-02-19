@@ -7402,7 +7402,22 @@ exampleI323E223 =
   \"
 
 resultI323E223 :: Layout
-resultI323E223 = E 0
+resultI323E223 =
+  let
+    pt1 = "    \t    "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "    \t "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = "       \t "
+    p3 = Prefix pt3
+    l3 = rel 23 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 37
+      (Cat.singleton $ Run p1 (Cat.singleton l1) l1 Empty p1)
+      (Run p2 (Cat.singleton l2) l2 Empty p2)
+      (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 (Cat.singleton $ LayoutMismatch 23 p2 p3) p3)
 
 exampleI323E300 :: Text
 exampleI323E300 =
@@ -7412,7 +7427,22 @@ exampleI323E300 =
   \"
 
 resultI323E300 :: Layout
-resultI323E300 = E 0
+resultI323E300 =
+  let
+    pt1 = "       \t "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "      "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = "         "
+    p3 = Prefix pt3
+    l3 = rel 23 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 37
+      (Cat.singleton $ Run p1 (Cat.singleton l1) l1 Empty p1)
+      (Run p2 (Cat.singleton l2 <> Cat.singleton l3) (l2 <> l3) Empty p3)
+       Empty
 
 exampleI323E301 :: Text
 exampleI323E301 =
@@ -7422,7 +7452,22 @@ exampleI323E301 =
   \"
 
 resultI323E301 :: Layout
-resultI323E301 = E 0
+resultI323E301 =
+  let
+    pt1 = "       \t "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "      "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = " \t       "
+    p3 = Prefix pt3
+    l3 = rel 23 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 37
+      (Cat.singleton $ Run p1 (Cat.singleton l1) l1 Empty p1)
+      (Run p2 (Cat.singleton l2) l2 Empty p2)
+      (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 (Cat.singleton $ LayoutMismatch 23 p2 p3) p3)
 
 exampleI323E302 :: Text
 exampleI323E302 =
@@ -7432,7 +7477,22 @@ exampleI323E302 =
   \"
 
 resultI323E302 :: Layout
-resultI323E302 = E 0
+resultI323E302 =
+  let
+    pt1 = "       \t "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "      "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = "    \t    "
+    p3 = Prefix pt3
+    l3 = rel 23 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 37
+      (Cat.singleton $ Run p1 (Cat.singleton l1) l1 Empty p1)
+      (Run p2 (Cat.singleton l2) l2 Empty p2)
+      (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 (Cat.singleton $ LayoutMismatch 23 p2 p3) p3)
 
 exampleI323E303 :: Text
 exampleI323E303 =
@@ -7442,7 +7502,22 @@ exampleI323E303 =
   \"
 
 resultI323E303 :: Layout
-resultI323E303 = E 0
+resultI323E303 =
+  let
+    pt1 = "       \t "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "      "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = "       \t "
+    p3 = Prefix pt3
+    l3 = rel 23 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 37
+      (Cat.singleton $ Run p1 (Cat.singleton l1) l1 Empty p1)
+      (Run p2 (Cat.singleton l2 <> Cat.singleton l3) (l2 <> l3) Empty p3)
+       Empty
 
 exampleI323E310 :: Text
 exampleI323E310 =
@@ -7452,7 +7527,23 @@ exampleI323E310 =
   \"
 
 resultI323E310 :: Layout
-resultI323E310 = E 0
+resultI323E310 =
+  let
+    pt1 = "       \t "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = " \t    "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = "         "
+    p3 = Prefix pt3
+    l3 = rel 23 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 37
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 13 p1 p2) p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 (Cat.singleton $ LayoutMismatch 23 p2 p3) p3))
 
 exampleI323E311 :: Text
 exampleI323E311 =
@@ -7462,7 +7553,22 @@ exampleI323E311 =
   \"
 
 resultI323E311 :: Layout
-resultI323E311 = E 0
+resultI323E311 =
+  let
+    pt1 = "       \t "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = " \t    "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = " \t       "
+    p3 = Prefix pt3
+    l3 = rel 23 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 37
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      (Rev . Cat.singleton $ Run p2 (Cat.singleton l2 <> Cat.singleton l3) (l2 <> l3) (Cat.singleton $ LayoutMismatch 13 p1 p2) p3)
 
 exampleI323E312 :: Text
 exampleI323E312 =
@@ -7472,7 +7578,23 @@ exampleI323E312 =
   \"
 
 resultI323E312 :: Layout
-resultI323E312 = E 0
+resultI323E312 =
+  let
+    pt1 = "       \t "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = " \t    "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = "    \t    "
+    p3 = Prefix pt3
+    l3 = rel 23 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 37
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 13 p1 p2) p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 (Cat.singleton $ LayoutMismatch 23 p2 p3) p3))
 
 exampleI323E313 :: Text
 exampleI323E313 =
@@ -7482,7 +7604,23 @@ exampleI323E313 =
   \"
 
 resultI323E313 :: Layout
-resultI323E313 = E 0
+resultI323E313 =
+  let
+    pt1 = "       \t "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = " \t    "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = "       \t "
+    p3 = Prefix pt3
+    l3 = rel 23 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 37
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 13 p1 p2) p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 (Cat.singleton $ LayoutMismatch 23 p2 p3) p3))
 
 exampleI323E320 :: Text
 exampleI323E320 =
@@ -7492,7 +7630,23 @@ exampleI323E320 =
   \"
 
 resultI323E320 :: Layout
-resultI323E320 = E 0
+resultI323E320 =
+  let
+    pt1 = "       \t "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "    \t "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = "         "
+    p3 = Prefix pt3
+    l3 = rel 23 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 37
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 13 p1 p2) p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 (Cat.singleton $ LayoutMismatch 23 p2 p3) p3))
 
 exampleI323E321 :: Text
 exampleI323E321 =
@@ -7502,7 +7656,23 @@ exampleI323E321 =
   \"
 
 resultI323E321 :: Layout
-resultI323E321 = E 0
+resultI323E321 =
+  let
+    pt1 = "       \t "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "    \t "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = " \t       "
+    p3 = Prefix pt3
+    l3 = rel 23 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 37
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 13 p1 p2) p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 (Cat.singleton $ LayoutMismatch 23 p2 p3) p3))
 
 exampleI323E322 :: Text
 exampleI323E322 =
@@ -7511,9 +7681,23 @@ exampleI323E322 =
   \    \t    three\n\
   \"
 
-
 resultI323E322 :: Layout
-resultI323E322 = E 0
+resultI323E322 =
+  let
+    pt1 = "       \t "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "    \t "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = "    \t    "
+    p3 = Prefix pt3
+    l3 = rel 23 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 37
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      (Rev . Cat.singleton $ Run p2 (Cat.singleton l2 <> Cat.singleton l3) (l2 <> l3) (Cat.singleton $ LayoutMismatch 13 p1 p2) p3)
 
 exampleI323E323 :: Text
 exampleI323E323 =
@@ -7523,7 +7707,23 @@ exampleI323E323 =
   \"
 
 resultI323E323 :: Layout
-resultI323E323 = E 0
+resultI323E323 =
+  let
+    pt1 = "       \t "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "    \t "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = "       \t "
+    p3 = Prefix pt3
+    l3 = rel 23 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 37
+       Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 13 p1 p2) p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 (Cat.singleton $ LayoutMismatch 23 p2 p3) p3))
 
 exampleI331E000 :: Text
 exampleI331E000 =
