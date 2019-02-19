@@ -6691,7 +6691,22 @@ exampleI322E000 =
   \"
 
 resultI322E000 :: Layout
-resultI322E000 = E 0
+resultI322E000 =
+  let
+    pt1 = "         "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "      "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = "      "
+    p3 = Prefix pt3
+    l3 = rel 23 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 34
+      (Cat.singleton $ Run p1 (Cat.singleton l1) l1 Empty p1)
+      (Run p2 (Cat.singleton l2) l2 Empty p2)
+      (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 Empty p3)
 
 exampleI322E001 :: Text
 exampleI322E001 =
@@ -6701,7 +6716,22 @@ exampleI322E001 =
   \"
 
 resultI322E001 :: Layout
-resultI322E001 = E 0
+resultI322E001 =
+  let
+    pt1 = "         "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "      "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = " \t    "
+    p3 = Prefix pt3
+    l3 = rel 23 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 34
+      (Cat.singleton $ Run p1 (Cat.singleton l1) l1 Empty p1)
+      (Run p2 (Cat.singleton l2) l2 Empty p2)
+      (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 (Cat.singleton $ LayoutMismatch 23 p2 p3) p3)
 
 exampleI322E002 :: Text
 exampleI322E002 =
@@ -6711,7 +6741,22 @@ exampleI322E002 =
   \"
 
 resultI322E002 :: Layout
-resultI322E002 = E 0
+resultI322E002 =
+  let
+    pt1 = "         "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "      "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = "    \t "
+    p3 = Prefix pt3
+    l3 = rel 23 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 34
+      (Cat.singleton $ Run p1 (Cat.singleton l1) l1 Empty p1)
+      (Run p2 (Cat.singleton l2) l2 Empty p2)
+      (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 (Cat.singleton $ LayoutMismatch 23 p2 p3) p3)
 
 exampleI322E010 :: Text
 exampleI322E010 =
@@ -6721,7 +6766,23 @@ exampleI322E010 =
   \"
 
 resultI322E010 :: Layout
-resultI322E010 = E 0
+resultI322E010 =
+  let
+    pt1 = "         "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = " \t    "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = "      "
+    p3 = Prefix pt3
+    l3 = rel 23 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 34
+      Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 13 p1 p2) p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 (Cat.singleton $ LayoutMismatch 23 p2 p3) p3))
 
 exampleI322E011 :: Text
 exampleI322E011 =
@@ -6731,7 +6792,23 @@ exampleI322E011 =
   \"
 
 resultI322E011 :: Layout
-resultI322E011 = E 0
+resultI322E011 =
+  let
+    pt1 = "         "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = " \t    "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = " \t    "
+    p3 = Prefix pt3
+    l3 = rel 23 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 34
+      Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 13 p1 p2) p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 Empty p3))
 
 exampleI322E012 :: Text
 exampleI322E012 =
@@ -6741,7 +6818,23 @@ exampleI322E012 =
   \"
 
 resultI322E012 :: Layout
-resultI322E012 = E 0
+resultI322E012 =
+  let
+    pt1 = "         "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = " \t    "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = "    \t "
+    p3 = Prefix pt3
+    l3 = rel 23 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 34
+      Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 13 p1 p2) p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 (Cat.singleton $ LayoutMismatch 23 p2 p3) p3))
 
 exampleI322E020 :: Text
 exampleI322E020 =
@@ -6751,7 +6844,23 @@ exampleI322E020 =
   \"
 
 resultI322E020 :: Layout
-resultI322E020 = E 0
+resultI322E020 =
+  let
+    pt1 = "         "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "    \t "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = "      "
+    p3 = Prefix pt3
+    l3 = rel 23 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 34
+      Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 13 p1 p2) p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 (Cat.singleton $ LayoutMismatch 23 p2 p3) p3))
 
 exampleI322E021 :: Text
 exampleI322E021 =
@@ -6761,7 +6870,23 @@ exampleI322E021 =
   \"
 
 resultI322E021 :: Layout
-resultI322E021 = E 0
+resultI322E021 =
+  let
+    pt1 = "         "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "    \t "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = " \t    "
+    p3 = Prefix pt3
+    l3 = rel 23 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 34
+      Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 13 p1 p2) p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 (Cat.singleton $ LayoutMismatch 23 p2 p3) p3))
 
 exampleI322E022 :: Text
 exampleI322E022 =
@@ -6771,7 +6896,23 @@ exampleI322E022 =
   \"
 
 resultI322E022 :: Layout
-resultI322E022 = E 0
+resultI322E022 =
+  let
+    pt1 = "         "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "    \t "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = "    \t "
+    p3 = Prefix pt3
+    l3 = rel 23 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 34
+      Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 13 p1 p2) p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 Empty p3))
 
 exampleI322E100 :: Text
 exampleI322E100 =
@@ -6781,7 +6922,23 @@ exampleI322E100 =
   \"
 
 resultI322E100 :: Layout
-resultI322E100 = E 0
+resultI322E100 =
+  let
+    pt1 = " \t       "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "      "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = "      "
+    p3 = Prefix pt3
+    l3 = rel 23 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 34
+      Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 13 p1 p2) p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 Empty p3))
 
 exampleI322E101 :: Text
 exampleI322E101 =
@@ -6791,7 +6948,23 @@ exampleI322E101 =
   \"
 
 resultI322E101 :: Layout
-resultI322E101 = E 0
+resultI322E101 =
+  let
+    pt1 = " \t       "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "      "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = " \t    "
+    p3 = Prefix pt3
+    l3 = rel 23 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 34
+      Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 13 p1 p2) p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 (Cat.singleton $ LayoutMismatch 23 p2 p3) p3))
 
 exampleI322E102 :: Text
 exampleI322E102 =
@@ -6801,7 +6974,23 @@ exampleI322E102 =
   \"
 
 resultI322E102 :: Layout
-resultI322E102 = E 0
+resultI322E102 =
+  let
+    pt1 = " \t       "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "      "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = "    \t "
+    p3 = Prefix pt3
+    l3 = rel 23 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 34
+      Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 13 p1 p2) p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 (Cat.singleton $ LayoutMismatch 23 p2 p3) p3))
 
 exampleI322E110 :: Text
 exampleI322E110 =
@@ -6811,7 +7000,22 @@ exampleI322E110 =
   \"
 
 resultI322E110 :: Layout
-resultI322E110 = E 0
+resultI322E110 =
+  let
+    pt1 = " \t       "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = " \t    "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = "      "
+    p3 = Prefix pt3
+    l3 = rel 23 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 34
+      (Cat.singleton $ Run p1 (Cat.singleton l1) l1 Empty p1)
+      (Run p2 (Cat.singleton l2) l2 Empty p2)
+      (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 (Cat.singleton $ LayoutMismatch 23 p2 p3) p3)
 
 exampleI322E111 :: Text
 exampleI322E111 =
@@ -6821,7 +7025,22 @@ exampleI322E111 =
   \"
 
 resultI322E111 :: Layout
-resultI322E111 = E 0
+resultI322E111 =
+  let
+    pt1 = " \t       "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = " \t    "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = " \t    "
+    p3 = Prefix pt3
+    l3 = rel 23 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 34
+      (Cat.singleton $ Run p1 (Cat.singleton l1) l1 Empty p1)
+      (Run p2 (Cat.singleton l2) l2 Empty p2)
+      (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 Empty p3)
 
 exampleI322E112 :: Text
 exampleI322E112 =
@@ -6831,7 +7050,22 @@ exampleI322E112 =
   \"
 
 resultI322E112 :: Layout
-resultI322E112 = E 0
+resultI322E112 =
+  let
+    pt1 = " \t       "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = " \t    "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = "    \t "
+    p3 = Prefix pt3
+    l3 = rel 23 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 34
+      (Cat.singleton $ Run p1 (Cat.singleton l1) l1 Empty p1)
+      (Run p2 (Cat.singleton l2) l2 Empty p2)
+      (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 (Cat.singleton $ LayoutMismatch 23 p2 p3) p3)
 
 exampleI322E120 :: Text
 exampleI322E120 =
@@ -6841,7 +7075,23 @@ exampleI322E120 =
   \"
 
 resultI322E120 :: Layout
-resultI322E120 = E 0
+resultI322E120 =
+  let
+    pt1 = " \t       "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "    \t "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = "      "
+    p3 = Prefix pt3
+    l3 = rel 23 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 34
+      Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 13 p1 p2) p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 (Cat.singleton $ LayoutMismatch 23 p2 p3) p3))
 
 exampleI322E121 :: Text
 exampleI322E121 =
@@ -6851,7 +7101,23 @@ exampleI322E121 =
   \"
 
 resultI322E121 :: Layout
-resultI322E121 = E 0
+resultI322E121 =
+  let
+    pt1 = " \t       "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "    \t "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = " \t    "
+    p3 = Prefix pt3
+    l3 = rel 23 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 34
+      Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 13 p1 p2) p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 (Cat.singleton $ LayoutMismatch 23 p2 p3) p3))
 
 exampleI322E122 :: Text
 exampleI322E122 =
@@ -6861,7 +7127,23 @@ exampleI322E122 =
   \"
 
 resultI322E122 :: Layout
-resultI322E122 = E 0
+resultI322E122 =
+  let
+    pt1 = " \t       "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "    \t "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = "    \t "
+    p3 = Prefix pt3
+    l3 = rel 23 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 34
+      Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 13 p1 p2) p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 Empty p3))
 
 exampleI322E200 :: Text
 exampleI322E200 =
@@ -6871,7 +7153,23 @@ exampleI322E200 =
   \"
 
 resultI322E200 :: Layout
-resultI322E200 = E 0
+resultI322E200 =
+  let
+    pt1 = "    \t    "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "      "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = "      "
+    p3 = Prefix pt3
+    l3 = rel 23 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 34
+      Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 13 p1 p2) p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 Empty p3))
 
 exampleI322E201 :: Text
 exampleI322E201 =
@@ -6881,7 +7179,23 @@ exampleI322E201 =
   \"
 
 resultI322E201 :: Layout
-resultI322E201 = E 0
+resultI322E201 =
+  let
+    pt1 = "    \t    "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "      "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = " \t    "
+    p3 = Prefix pt3
+    l3 = rel 23 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 34
+      Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 13 p1 p2) p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 (Cat.singleton $ LayoutMismatch 23 p2 p3) p3))
 
 exampleI322E202 :: Text
 exampleI322E202 =
@@ -6891,7 +7205,23 @@ exampleI322E202 =
   \"
 
 resultI322E202 :: Layout
-resultI322E202 = E 0
+resultI322E202 =
+  let
+    pt1 = "    \t    "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "      "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = "    \t "
+    p3 = Prefix pt3
+    l3 = rel 23 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 34
+      Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 13 p1 p2) p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 (Cat.singleton $ LayoutMismatch 23 p2 p3) p3))
 
 exampleI322E210 :: Text
 exampleI322E210 =
@@ -6901,7 +7231,23 @@ exampleI322E210 =
   \"
 
 resultI322E210 :: Layout
-resultI322E210 = E 0
+resultI322E210 =
+  let
+    pt1 = "    \t    "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = " \t    "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = "      "
+    p3 = Prefix pt3
+    l3 = rel 23 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 34
+      Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 13 p1 p2) p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 (Cat.singleton $ LayoutMismatch 23 p2 p3) p3))
 
 exampleI322E211 :: Text
 exampleI322E211 =
@@ -6911,7 +7257,23 @@ exampleI322E211 =
   \"
 
 resultI322E211 :: Layout
-resultI322E211 = E 0
+resultI322E211 =
+  let
+    pt1 = "    \t    "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = " \t    "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = " \t    "
+    p3 = Prefix pt3
+    l3 = rel 23 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 34
+      Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 13 p1 p2) p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 Empty p3))
 
 exampleI322E212 :: Text
 exampleI322E212 =
@@ -6921,7 +7283,23 @@ exampleI322E212 =
   \"
 
 resultI322E212 :: Layout
-resultI322E212 = E 0
+resultI322E212 =
+  let
+    pt1 = "    \t    "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = " \t    "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = "    \t "
+    p3 = Prefix pt3
+    l3 = rel 23 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 34
+      Empty
+      (Run p1 (Cat.singleton l1) l1 Empty p1)
+      ((Rev . Cat.singleton $ Run p2 (Cat.singleton l2) l2 (Cat.singleton $ LayoutMismatch 13 p1 p2) p2) <>
+       (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 (Cat.singleton $ LayoutMismatch 23 p2 p3) p3))
 
 exampleI322E220 :: Text
 exampleI322E220 =
@@ -6931,7 +7309,22 @@ exampleI322E220 =
   \"
 
 resultI322E220 :: Layout
-resultI322E220 = E 0
+resultI322E220 =
+  let
+    pt1 = "    \t    "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "    \t "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = "      "
+    p3 = Prefix pt3
+    l3 = rel 23 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 34
+      (Cat.singleton $ Run p1 (Cat.singleton l1) l1 Empty p1)
+      (Run p2 (Cat.singleton l2) l2 Empty p2)
+      (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 (Cat.singleton $ LayoutMismatch 23 p2 p3) p3)
 
 exampleI322E221 :: Text
 exampleI322E221 =
@@ -6941,7 +7334,22 @@ exampleI322E221 =
   \"
 
 resultI322E221 :: Layout
-resultI322E221 = E 0
+resultI322E221 =
+  let
+    pt1 = "    \t    "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "    \t "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = " \t    "
+    p3 = Prefix pt3
+    l3 = rel 23 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 34
+      (Cat.singleton $ Run p1 (Cat.singleton l1) l1 Empty p1)
+      (Run p2 (Cat.singleton l2) l2 Empty p2)
+      (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 (Cat.singleton $ LayoutMismatch 23 p2 p3) p3)
 
 exampleI322E222 :: Text
 exampleI322E222 =
@@ -6951,7 +7359,22 @@ exampleI322E222 =
   \"
 
 resultI322E222 :: Layout
-resultI322E222 = E 0
+resultI322E222 =
+  let
+    pt1 = "    \t    "
+    p1 = Prefix pt1
+    l1 = Lex.lex $ pt1 <> "one\n"
+    pt2 = "    \t "
+    p2 = Prefix pt2
+    l2 = rel 13 $ Lex.lex $ pt2 <> "two\n"
+    pt3 = "    \t "
+    p3 = Prefix pt3
+    l3 = rel 23 $ Lex.lex $ pt3 <> "three\n"
+  in
+    V 34
+      (Cat.singleton $ Run p1 (Cat.singleton l1) l1 Empty p1)
+      (Run p2 (Cat.singleton l2) l2 Empty p2)
+      (Rev . Cat.singleton $ Run p3 (Cat.singleton l3) l3 Empty p3)
 
 exampleI322E300 :: Text
 exampleI322E300 =
@@ -12689,42 +13112,42 @@ test_layout_example =
     , testCase "I321E311"  $ assertAllEqTo exampleI321E311 resultI321E311
     , testCase "I321E320"  $ assertAllEqTo exampleI321E320 resultI321E320
     , testCase "I321E321"  $ assertAllEqTo exampleI321E321 resultI321E321
-    , testCase "I322E000"  $ assertAllEqTo exampleI322E000 resultI322E000
-    , testCase "I322E001"  $ assertAllEqTo exampleI322E001 resultI322E001
-    , testCase "I322E002"  $ assertAllEqTo exampleI322E002 resultI322E002
-    , testCase "I322E010"  $ assertAllEqTo exampleI322E010 resultI322E010
-    , testCase "I322E011"  $ assertAllEqTo exampleI322E011 resultI322E011
-    , testCase "I322E012"  $ assertAllEqTo exampleI322E012 resultI322E012
-    , testCase "I322E020"  $ assertAllEqTo exampleI322E020 resultI322E020
-    , testCase "I322E021"  $ assertAllEqTo exampleI322E021 resultI322E021
-    , testCase "I322E022"  $ assertAllEqTo exampleI322E022 resultI322E022
-    , testCase "I322E100"  $ assertAllEqTo exampleI322E100 resultI322E100
-    , testCase "I322E101"  $ assertAllEqTo exampleI322E101 resultI322E101
-    , testCase "I322E102"  $ assertAllEqTo exampleI322E102 resultI322E102
-    , testCase "I322E110"  $ assertAllEqTo exampleI322E110 resultI322E110
-    , testCase "I322E111"  $ assertAllEqTo exampleI322E111 resultI322E111
-    , testCase "I322E112"  $ assertAllEqTo exampleI322E112 resultI322E112
-    , testCase "I322E120"  $ assertAllEqTo exampleI322E120 resultI322E120
-    , testCase "I322E121"  $ assertAllEqTo exampleI322E121 resultI322E121
-    , testCase "I322E122"  $ assertAllEqTo exampleI322E122 resultI322E122
-    , testCase "I322E200"  $ assertAllEqTo exampleI322E200 resultI322E200
-    , testCase "I322E201"  $ assertAllEqTo exampleI322E201 resultI322E201
-    , testCase "I322E202"  $ assertAllEqTo exampleI322E202 resultI322E202
-    , testCase "I322E210"  $ assertAllEqTo exampleI322E210 resultI322E210
-    , testCase "I322E211"  $ assertAllEqTo exampleI322E211 resultI322E211
-    , testCase "I322E212"  $ assertAllEqTo exampleI322E212 resultI322E212
-    , testCase "I322E220"  $ assertAllEqTo exampleI322E220 resultI322E220
-    , testCase "I322E221"  $ assertAllEqTo exampleI322E221 resultI322E221
-    , testCase "I322E222"  $ assertAllEqTo exampleI322E222 resultI322E222
-    , testCase "I322E300"  $ assertAllEqTo exampleI322E300 resultI322E300
-    , testCase "I322E301"  $ assertAllEqTo exampleI322E301 resultI322E301
-    , testCase "I322E302"  $ assertAllEqTo exampleI322E302 resultI322E302
-    , testCase "I322E310"  $ assertAllEqTo exampleI322E310 resultI322E310
-    , testCase "I322E311"  $ assertAllEqTo exampleI322E311 resultI322E311
-    , testCase "I322E312"  $ assertAllEqTo exampleI322E312 resultI322E312
-    , testCase "I322E320"  $ assertAllEqTo exampleI322E320 resultI322E320
-    , testCase "I322E321"  $ assertAllEqTo exampleI322E321 resultI322E321
-    , testCase "I322E322"  $ assertAllEqTo exampleI322E322 resultI322E322
+    -- , testCase "I322E000"  $ assertAllEqTo exampleI322E000 resultI322E000
+    -- , testCase "I322E001"  $ assertAllEqTo exampleI322E001 resultI322E001
+    -- , testCase "I322E002"  $ assertAllEqTo exampleI322E002 resultI322E002
+    -- , testCase "I322E010"  $ assertAllEqTo exampleI322E010 resultI322E010
+    -- , testCase "I322E011"  $ assertAllEqTo exampleI322E011 resultI322E011
+    -- , testCase "I322E012"  $ assertAllEqTo exampleI322E012 resultI322E012
+    -- , testCase "I322E020"  $ assertAllEqTo exampleI322E020 resultI322E020
+    -- , testCase "I322E021"  $ assertAllEqTo exampleI322E021 resultI322E021
+    -- , testCase "I322E022"  $ assertAllEqTo exampleI322E022 resultI322E022
+    -- , testCase "I322E100"  $ assertAllEqTo exampleI322E100 resultI322E100
+    -- , testCase "I322E101"  $ assertAllEqTo exampleI322E101 resultI322E101
+    -- , testCase "I322E102"  $ assertAllEqTo exampleI322E102 resultI322E102
+    -- , testCase "I322E110"  $ assertAllEqTo exampleI322E110 resultI322E110
+    -- , testCase "I322E111"  $ assertAllEqTo exampleI322E111 resultI322E111
+    -- , testCase "I322E112"  $ assertAllEqTo exampleI322E112 resultI322E112
+    -- , testCase "I322E120"  $ assertAllEqTo exampleI322E120 resultI322E120
+    -- , testCase "I322E121"  $ assertAllEqTo exampleI322E121 resultI322E121
+    -- , testCase "I322E122"  $ assertAllEqTo exampleI322E122 resultI322E122
+    -- , testCase "I322E200"  $ assertAllEqTo exampleI322E200 resultI322E200
+    -- , testCase "I322E201"  $ assertAllEqTo exampleI322E201 resultI322E201
+    -- , testCase "I322E202"  $ assertAllEqTo exampleI322E202 resultI322E202
+    -- , testCase "I322E210"  $ assertAllEqTo exampleI322E210 resultI322E210
+    -- , testCase "I322E211"  $ assertAllEqTo exampleI322E211 resultI322E211
+    -- , testCase "I322E212"  $ assertAllEqTo exampleI322E212 resultI322E212
+    -- , testCase "I322E220"  $ assertAllEqTo exampleI322E220 resultI322E220
+    -- , testCase "I322E221"  $ assertAllEqTo exampleI322E221 resultI322E221
+    -- , testCase "I322E222"  $ assertAllEqTo exampleI322E222 resultI322E222
+    -- , testCase "I322E300"  $ assertAllEqTo exampleI322E300 resultI322E300
+    -- , testCase "I322E301"  $ assertAllEqTo exampleI322E301 resultI322E301
+    -- , testCase "I322E302"  $ assertAllEqTo exampleI322E302 resultI322E302
+    -- , testCase "I322E310"  $ assertAllEqTo exampleI322E310 resultI322E310
+    -- , testCase "I322E311"  $ assertAllEqTo exampleI322E311 resultI322E311
+    -- , testCase "I322E312"  $ assertAllEqTo exampleI322E312 resultI322E312
+    -- , testCase "I322E320"  $ assertAllEqTo exampleI322E320 resultI322E320
+    -- , testCase "I322E321"  $ assertAllEqTo exampleI322E321 resultI322E321
+    -- , testCase "I322E322"  $ assertAllEqTo exampleI322E322 resultI322E322
     -- , testCase "I323E000"  $ assertAllEqTo exampleI323E000 resultI323E000
     -- , testCase "I323E001"  $ assertAllEqTo exampleI323E001 resultI323E001
     -- , testCase "I323E002"  $ assertAllEqTo exampleI323E002 resultI323E002
