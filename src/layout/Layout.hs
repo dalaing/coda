@@ -96,50 +96,125 @@ revCat (x :< xs) = snocCat (revCat xs) x
 runSnocMismatch :: LayoutMismatch -> Run -> Run
 runSnocMismatch e (Run p ds ts es pr) = Run p ds ts (snocCat es e) pr
 
-runMerge :: Delta -> Run -> Run -> Run
-runMerge d (Run p ds ts es pr) (Run p' ds' ts' es' pr') =
-  case joinAndCompare pr p' of
-    Left _ ->
-      Run p (ds <> rel d ds') (ts <> rel d ts') (es <> rel d (snocCat es' (LayoutMismatch 0 pr p'))) pr'
-    Right _ ->
-      Run p (ds <> rel d ds') (ts <> rel d ts') (es <> rel d es') pr'
+instance Semigroup Layout where
+  E 0 <> xs = xs
+  xs <> E 0 = xs
+  E d <> E d' = E (d <> d')
+  E d <> S d' (Run p ds ts es pr) = S (d <> d') $ Run p (rel d ds) (rel d ts) (rel d es) pr
+  E d <> V d' l m r = V (d <> d') (rel d l) (rel d m) (rel d r)
+  S d m <> E d' = S (d <> d') m
+  S d m@(Run p ds ts es pr) <> S d' m'@(Run p' ds' ts' es' pr') =
+    case joinAndCompare pr p' >> joinAndCompare p p' of
+      Left _ -> V (d <> d') Empty m (rel d . Rev . Cat.singleton . runSnocMismatch (LayoutMismatch 0 pr p') $ m')
+      Right LT
+        -- | boring ts -> S (d <> d') $ Run p (ds <> rel d ds') (ts <> rel d ts') (es <> rel d es') pr'
+        -- | otherwise -> V (d <> d') Empty m (Rev (Cat.singleton (rel d m')))
+        -> V (d <> d') Empty m (Rev (Cat.singleton (rel d m')))
+      Right EQ -> V (d <> d') Empty m (Rev (Cat.singleton (rel d m')))
+      Right GT -> V (d <> d') (Cat.singleton m) (rel d m') Empty
 
-shuffle :: Delta -> Run -> Cat Run -> Maybe Run -> Rev Cat Run -> (Run, Cat Run, Maybe Run, Rev Cat Run)
-shuffle d m l' m' r' =
-  let
-    (m'', l''', m''', r''') = shuffle' d m l' m' (revCat (runRev r'))
-  in
-    (m'', rel d l''', fmap (rel d) m''', Rev (revCat (rel d r''')))
+  S d m@(Run p ds ts es pr) <> V d' Empty m'@(Run p' ds' ts' es' pr') r' =
+    case joinAndCompare p p' of
+      Left _ -> error "A1"
+      Right LT -> V (d <> d') Empty m (rel d (Rev (Cat.singleton m') <> r'))
+      Right EQ -> V (d <> d') Empty m (rel d (Rev (Cat.singleton m') <> r'))
+      Right GT -> V (d <> d') (Cat.singleton m) (rel d m') (rel d r')
 
--- will this ever need to deal with EQ?
-shuffle' :: Delta -> Run -> Cat Run -> Maybe Run -> Cat Run -> (Run, Cat Run, Maybe Run, Cat Run)
-shuffle' d m@(Run p _ ts Empty pr) l' m' r' =
+  S d m@(Run p ds ts es pr) <> V d' l'@(lh'@(Run p' ds' ts' es' pr') :< lt') m' r' =
+    case joinAndCompare p (prefix m') of
+      Left _ -> error "B1"
+      Right LT -> V (d <> d') Empty m (rel d (Rev (revCat l') <> Rev (Cat.singleton m') <> r'))
+      Right EQ -> V (d <> d') Empty m (rel d (Rev (revCat l') <> Rev (Cat.singleton m') <> r'))
+      Right GT -> V (d <> d') (m :< rel d l') (rel d m') (rel d r')
+
+  V d l m r <> E d' = V (d <> d') l m r
+
+  V d l m@(Run p ds ts es pr) Empty <> S d' m'@(Run p' ds' ts' es' pr') =
+    case joinAndCompare p p' of
+      Left _ -> error "C1"
+      Right LT -> V (d <> d') l m (rel d . Rev . Cat.singleton $ m')
+      Right EQ -> V (d <> d') l m (rel d . Rev . Cat.singleton $ m')
+      Right GT -> V (d <> d') (l <> Cat.singleton m) (rel d m') Empty
+
+  V d l m r@(rt :> rh@(Run p ds ts es pr)) <> S d' m'@(Run p' ds' ts' es' pr') =
+    case joinAndCompare (prefix m) p' of
+      Left _ -> error "D1"
+      Right LT -> V (d <> d') l m (r <> (rel d . Rev . Cat.singleton $ m'))
+      Right EQ -> V (d <> d') l m (r <> (rel d . Rev . Cat.singleton $ m'))
+      Right GT -> V (d <> d') (l <> Cat.singleton m <> revCat (runRev r)) (rel d m') Empty
+
+  V d l m@(Run p ds ts es pr) Empty <> V d' Empty m'@(Run p' ds' ts' es' pr') r' =
+    case joinAndCompare p p' of
+      Left _ -> error "E1"
+      Right LT -> V (d <> d') l m (rel d (Rev (Cat.singleton m') <> r'))
+      Right EQ -> V (d <> d') l m (rel d (Rev (Cat.singleton m') <> r'))
+      Right GT -> V (d <> d') (l <> Cat.singleton m) (rel d m') (rel d r')
+
+  V d l m@(Run p ds ts es pr) Empty <> V d' l'@(lh'@(Run p' ds' ts' es' pr') :< lt') m' r' =
+    case joinAndCompare p (prefix m') of
+      Left _ -> error "F1"
+      Right LT -> V (d <> d') l m (rel d (Rev (revCat l') <> Rev (Cat.singleton m') <> r'))
+      Right EQ -> V (d <> d') l m (rel d (Rev (revCat l') <> Rev (Cat.singleton m') <> r'))
+      Right GT -> V (d <> d') (l <> Cat.singleton m <> rel d l') (rel d m') (rel d r')
+
+  V d l m r@(rt :> rh@(Run p ds ts es pr)) <> V d' Empty m'@(Run p' ds' ts' es' pr') r' =
+    case joinAndCompare (prefix m) p' of
+      Left _ -> error "G1"
+      Right LT -> V (d <> d') l m (r <> rel d (Rev (Cat.singleton m') <> r'))
+      Right EQ -> V (d <> d') l m (r <> rel d (Rev (Cat.singleton m') <> r'))
+      Right GT -> V (d <> d') (l <> Cat.singleton m <> revCat (runRev r)) (rel d m') (rel d r')
+
+  V d l m r@(rt :> rh@(Run p ds ts es pr)) <> V d' l'@(lh'@(Run p' ds' ts' es' pr') :< lt') m' r' =
+    case joinAndCompare (prefix m) (prefix m') of
+      Left _ -> error "H1"
+      Right LT -> V (d <> d') l m (r <> rel d (Rev (revCat l') <> Rev (Cat.singleton m') <> r'))
+      Right EQ -> V (d <> d') l m (r <> rel d (Rev (revCat l') <> Rev (Cat.singleton m') <> r'))
+      Right GT -> V (d <> d') (l <> Cat.singleton m <> revCat (runRev r) <> rel d l') (rel d m') (rel d r')
+
+-- runMerge :: Delta -> Run -> Run -> Run
+-- runMerge d (Run p ds ts es pr) (Run p' ds' ts' es' pr') =
+--   case joinAndCompare pr p' of
+--     Left _ ->
+--       Run p (ds <> rel d ds') (ts <> rel d ts') (es <> rel d (snocCat es' (LayoutMismatch 0 pr p'))) pr'
+--     Right _ ->
+--       Run p (ds <> rel d ds') (ts <> rel d ts') (es <> rel d es') pr'
+
+-- shuffle :: Delta -> Run -> Cat Run -> Maybe Run -> Rev Cat Run -> (Run, Cat Run, Maybe Run, Rev Cat Run)
+-- shuffle d m l' m' r' =
+--   let
+--     (m'', l''', m''', r''') = shuffle' d m l' m' (revCat (runRev r'))
+--   in
+--     (m'', rel d l''', fmap (rel d) m''', Rev (revCat (rel d r''')))
+
+-- -- will this ever need to deal with EQ?
+-- shuffle' :: Delta -> Run -> Cat Run -> Maybe Run -> Cat Run -> (Run, Cat Run, Maybe Run, Cat Run)
+-- shuffle' d m@(Run p _ ts Empty pr) l' m' r' =
+-- -- shuffle' d m@(Run p _ ts _ pr) l' m' r' =
+--   case preview _Cons l' of
+--     Just (lh'@(Run p' _ _ es' pr'), lt') ->
+--       case joinAndCompare p p' of
+--         Left _ | Cat.null es' -> (m, Cat.singleton (runSnocMismatch (LayoutMismatch 0 pr p') lh') <> lt', m', r')
+--         Right LT | boring ts && Cat.null es' -> shuffle' d (runMerge d m lh') lt' m' r'
+--         -- Right EQ | p /= pr && boring ts && Cat.null es' -> shuffle' d (runMerge d m lh') lt' m' r'
+--         otherwise -> (m, l', m', r')
+--     Nothing ->
+--       case m' of
+--         Just (m''@(Run p' _ _ es' pr')) ->
+--           case joinAndCompare p p' of
+--             Left _ | Cat.null es' -> (m, l', runSnocMismatch (LayoutMismatch d pr p') <$> m', r')
+--             Right LT | boring ts && Cat.null es' -> shuffle' d (runMerge d m m'') l' Nothing r'
+--             -- Right EQ | p /= pr && boring ts && Cat.null es' -> shuffle' d (runMerge d m m'') l' Nothing r'
+--             otherwise -> (m, l', m', r')
+--         Nothing -> case preview _Cons r' of
+--           Just (rh'@(Run p' _ _ es' pr'), rt') ->
+--             case joinAndCompare p p' of
+--               Left _ | Cat.null es' -> (m, l', m', Cat.singleton (runSnocMismatch (LayoutMismatch d pr p') rh') <> rt')
+--               Right LT | boring ts && Cat.null es' -> shuffle' d (runMerge d m rh') l' Nothing rt'
+--               -- Right EQ | p /= pr && boring ts && Cat.null es' -> shuffle' d (runMerge d m rh') l' Nothing rt'
+--               otherwise -> (m, l', m', r')
+--           Nothing -> (m, l', m', r')
 -- shuffle' d m@(Run p _ ts _ pr) l' m' r' =
-  case preview _Cons l' of
-    Just (lh'@(Run p' _ _ es' pr'), lt') ->
-      case joinAndCompare p p' of
-        Left _ | Cat.null es' -> (m, Cat.singleton (runSnocMismatch (LayoutMismatch 0 pr p') lh') <> lt', m', r')
-        Right LT | boring ts && Cat.null es' -> shuffle' d (runMerge d m lh') lt' m' r'
-        -- Right EQ | p /= pr && boring ts && Cat.null es' -> shuffle' d (runMerge d m lh') lt' m' r'
-        otherwise -> (m, l', m', r')
-    Nothing ->
-      case m' of
-        Just (m''@(Run p' _ _ es' pr')) ->
-          case joinAndCompare p p' of
-            Left _ | Cat.null es' -> (m, l', runSnocMismatch (LayoutMismatch d pr p') <$> m', r')
-            Right LT | boring ts && Cat.null es' -> shuffle' d (runMerge d m m'') l' Nothing r'
-            -- Right EQ | p /= pr && boring ts && Cat.null es' -> shuffle' d (runMerge d m m'') l' Nothing r'
-            otherwise -> (m, l', m', r')
-        Nothing -> case preview _Cons r' of
-          Just (rh'@(Run p' _ _ es' pr'), rt') ->
-            case joinAndCompare p p' of
-              Left _ | Cat.null es' -> (m, l', m', Cat.singleton (runSnocMismatch (LayoutMismatch d pr p') rh') <> rt')
-              Right LT | boring ts && Cat.null es' -> shuffle' d (runMerge d m rh') l' Nothing rt'
-              -- Right EQ | p /= pr && boring ts && Cat.null es' -> shuffle' d (runMerge d m rh') l' Nothing rt'
-              otherwise -> (m, l', m', r')
-          Nothing -> (m, l', m', r')
-shuffle' d m@(Run p _ ts _ pr) l' m' r' =
-  (m, l', m', r')
+--   (m, l', m', r')
 
 -- do we ever have to consider whether the tokens on the RHS of the join are boring or not?
 --
@@ -152,6 +227,7 @@ shuffle' d m@(Run p _ ts _ pr) l' m' r' =
 --   d
 -- or are they dealt with already?
 
+{-
 instance Semigroup Layout where
   E 0 <> xs = xs
   xs <> E 0 = xs
@@ -161,29 +237,12 @@ instance Semigroup Layout where
   S d m <> E d' = S (d <> d') m
   S d m@(Run p _ ts _ pr) <> S d' m'@(Run p' _ _ _ pr') =
     case joinAndCompare pr p' >> joinAndCompare p p' of
-      Left _ ->
-        V (d <> d') Empty m (Rev . Cat.singleton . rel d $ runSnocMismatch (LayoutMismatch 0 pr p') m')
-      --        m
-      --  m       m
-      -- <>     <>
-      -- m'      m'
+      Left _ -> V (d <> d') Empty m (Rev . Cat.singleton . rel d $ runSnocMismatch (LayoutMismatch 0 pr p') m')
       Right LT
-        | boring ts ->
-          S (d <> d') (runMerge d m m')
-        | otherwise ->
-          V (d <> d') Empty m (Rev (Cat.singleton (rel d m')))
-      --        m
-      --  m      m
-      -- <>     <>
-      -- m'     m'
-      Right EQ ->
-        V (d <> d') Empty m (Rev (Cat.singleton (rel d m')))
-      --         m
-      --  m       m
-      -- <>     <>
-      -- m'     m'
-      Right GT ->
-        V (d <> d') (Cat.singleton m) (rel d m') Empty
+        | boring ts -> S (d <> d') (runMerge d m m')
+        | otherwise -> V (d <> d') Empty m (Rev (Cat.singleton (rel d m')))
+      Right EQ -> V (d <> d') Empty m (Rev (Cat.singleton (rel d m')))
+      Right GT -> V (d <> d') (Cat.singleton m) (rel d m') Empty
 
   S d m@(Run p ds ts es pr) <> V d' l' m'@(Run p' ds' ts' es' pr') r' =
     case preview _Cons l' of
@@ -570,6 +629,7 @@ instance Semigroup Layout where
                   (rh'', l'', _, _) = shuffle d rh l' Nothing Empty
                 in
                   trace "  Right GT" $ V (d <> d') (l <> Cat.singleton m <> revCat (runRev rt) <> Cat.singleton rh'' <> l'') (rel d m') (rel d r')
+-}
 
 instance Monoid Layout where
   mempty = E 0
