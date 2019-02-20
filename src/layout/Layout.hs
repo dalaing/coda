@@ -223,14 +223,7 @@ instance Semigroup Layout where
       Just (lh'@(Run p'' ds'' ts'' es'' pr''), lt') ->
         case (joinAndCompare p p', joinAndCompare p p'') of
           (Left _, _) ->
-            -- V (d <> d') (Cat.singleton m <> rel d (Cat.singleton (runSnocMismatch (LayoutMismatch 0 pr p'') lh') <> lt')) (rel d m') (rel d r')
-            let
-              (m_, l'_, m'_, r_) = shuffle d m (Cat.singleton (runSnocMismatch (LayoutMismatch 0 pr p'') lh') <> lt') (Just m') r'
-              r'_ = (Rev (revCat l'_) <> maybe Empty (Rev . Cat.singleton) m'_ <> r_)
-            in
-              case preview _Snoc r'_ of
-                Nothing -> S (d <> d') m_
-                Just _ -> V (d <> d') Empty m_ r'_
+            V (d <> d') (Cat.singleton m <> rel d (Cat.singleton (runSnocMismatch (LayoutMismatch 0 pr p'') lh') <> lt')) (rel d m') (rel d r')
           (_, Left _) ->
             V (d <> d') (Cat.singleton m <> rel d (Cat.singleton (runSnocMismatch (LayoutMismatch 0 pr p'') lh') <> lt')) (rel d m') (rel d r')
           (Right LT, _) ->
@@ -324,10 +317,13 @@ instance Semigroup Layout where
               Right LT ->
                 V (d <> d') l m (r <> Rev (Cat.singleton (rel d m')))
               Right EQ ->
-                V (d <> d') l m (r <> Rev (Cat.singleton (rel d m')))
+                let
+                  (r_, l'_, m'_, _) = shuffle d rh (revCat (runRev rt)) (Just m') Empty
+                  r'_ = Rev (Cat.singleton r_) <> (Rev (revCat l'_)) <> maybe Empty (Rev . Cat.singleton . rel d) m'_
+                in
+                  V (d <> d') l m r'_
               Right GT ->
-                -- V (d <> d') (l <> Cat.singleton m <> revCat (runRev r)) (rel d m') Empty
-                V (d <> d') l m (r <> Rev (Cat.singleton (rel d m')))
+                V (d <> d') (l <> Cat.singleton m <> revCat (runRev r)) (rel d m') Empty
               otherwise ->
                 case preview _Cons l of
                   Nothing ->
@@ -341,7 +337,11 @@ instance Semigroup Layout where
               Right LT ->
                 V (d <> d') l m (r <> Rev (Cat.singleton (rel d m')))
               Right EQ ->
-                V (d <> d') l m (r <> Rev (Cat.singleton (rel d m')))
+                let
+                  (r_, l'_, m'_, _) = shuffle d rh (revCat (runRev rt)) (Just m') Empty
+                  r'_ = Rev (Cat.singleton r_) <> (Rev (revCat l'_)) <> maybe Empty (Rev . Cat.singleton) m'_
+                in
+                  V (d <> d') l m r'_
               Right GT ->
                 V (d <> d') l m (r <> Rev (Cat.singleton (rel d m')))
               otherwise ->
@@ -368,7 +368,7 @@ instance Semigroup Layout where
             --  r
             -- <>
             -- m'
-            V (d <> d') l m (r <> Rev (Cat.singleton (rel d m')))
+              V (d <> d') l m (r <> (rel d . Rev . Cat.singleton $ m'))
           (Right GT, _) ->
             --   l
             --  m
