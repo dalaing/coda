@@ -113,27 +113,33 @@ shuffle d m l' m' r' =
 
 -- will this ever need to deal with EQ?
 shuffle' :: Delta -> Run -> Cat Run -> Maybe Run -> Cat Run -> (Run, Cat Run, Maybe Run, Cat Run)
--- shuffle' d m@(Run p _ ts Empty pr) l' m' r' =
-shuffle' d m@(Run p _ ts _ pr) l' m' r' =
+shuffle' d m@(Run p _ ts Empty pr) l' m' r' =
+-- shuffle' d m@(Run p _ ts _ pr) l' m' r' =
   case preview _Cons l' of
     Just (lh'@(Run p' _ _ es' pr'), lt') ->
       case joinAndCompare p p' of
+        Left _ | Cat.null es' -> (m, Cat.singleton (runSnocMismatch (LayoutMismatch 0 pr p') lh') <> lt', m', r')
         Right LT | boring ts && Cat.null es' -> shuffle' d (runMerge d m lh') lt' m' r'
+        -- Right EQ | p /= pr && boring ts && Cat.null es' -> shuffle' d (runMerge d m lh') lt' m' r'
         otherwise -> (m, l', m', r')
     Nothing ->
       case m' of
         Just (m''@(Run p' _ _ es' pr')) ->
           case joinAndCompare p p' of
+            Left _ | Cat.null es' -> (m, l', runSnocMismatch (LayoutMismatch d pr p') <$> m', r')
             Right LT | boring ts && Cat.null es' -> shuffle' d (runMerge d m m'') l' Nothing r'
+            -- Right EQ | p /= pr && boring ts && Cat.null es' -> shuffle' d (runMerge d m m'') l' Nothing r'
             otherwise -> (m, l', m', r')
         Nothing -> case preview _Cons r' of
           Just (rh'@(Run p' _ _ es' pr'), rt') ->
             case joinAndCompare p p' of
+              Left _ | Cat.null es' -> (m, l', m', Cat.singleton (runSnocMismatch (LayoutMismatch d pr p') rh') <> rt')
               Right LT | boring ts && Cat.null es' -> shuffle' d (runMerge d m rh') l' Nothing rt'
+              -- Right EQ | p /= pr && boring ts && Cat.null es' -> shuffle' d (runMerge d m rh') l' Nothing rt'
               otherwise -> (m, l', m', r')
           Nothing -> (m, l', m', r')
--- shuffle' d m@(Run p _ ts _ pr) l' m' r' =
-  -- (m, l', m', r')
+shuffle' d m@(Run p _ ts _ pr) l' m' r' =
+  (m, l', m', r')
 
 -- do we ever have to consider whether the tokens on the RHS of the join are boring or not?
 --
@@ -318,10 +324,10 @@ instance Semigroup Layout where
                 V (d <> d') l m (r <> Rev (Cat.singleton (rel d m')))
               Right EQ ->
                 let
-                  (r_, l'_, m'_, _) = shuffle d rh (revCat (runRev rt)) (Just m') Empty
-                  r'_ = Rev (Cat.singleton r_) <> (Rev (revCat l'_)) <> maybe Empty (Rev . Cat.singleton . rel d) m'_
+                  (rh_, _, m'_, _) = shuffle d rh Empty (Just m') Empty
+                  r_ = rt <> Rev (Cat.singleton rh_) <> maybe Empty (Rev . Cat.singleton) m'_
                 in
-                  V (d <> d') l m r'_
+                  V (d <> d') l m r_
               Right GT ->
                 V (d <> d') (l <> Cat.singleton m <> revCat (runRev r)) (rel d m') Empty
               otherwise ->
@@ -338,10 +344,10 @@ instance Semigroup Layout where
                 V (d <> d') l m (r <> Rev (Cat.singleton (rel d m')))
               Right EQ ->
                 let
-                  (r_, l'_, m'_, _) = shuffle d rh (revCat (runRev rt)) (Just m') Empty
-                  r'_ = Rev (Cat.singleton r_) <> (Rev (revCat l'_)) <> maybe Empty (Rev . Cat.singleton) m'_
+                  (rh_, _, m'_, _) = shuffle d rh Empty (Just m') Empty
+                  r_ = rt <> Rev (Cat.singleton rh_) <> maybe Empty (Rev . Cat.singleton) m'_
                 in
-                  V (d <> d') l m r'_
+                  V (d <> d') l m r_
               Right GT ->
                 V (d <> d') l m (r <> Rev (Cat.singleton (rel d m')))
               otherwise ->

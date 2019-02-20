@@ -71,6 +71,8 @@ textToLayouts t =
         f2 = fold ls2
       in
         f1 <> f2
+        -- trace (Text.unpack . Text.unlines . showLayout $ f1) f1 <>
+        -- trace (Text.unpack . Text.unlines . showLayout $ f2) f2
   in
     fmap f [0..length ts - 1]
 
@@ -585,6 +587,22 @@ exampleE11 =
   \    four\n\
   \"
 
+exampleE12 :: Text
+exampleE12 =
+  "\t one\n\
+  \     two\n\
+  \     three\n\
+  \     four\n\
+  \"
+
+exampleE13 :: Text
+exampleE13 =
+  "  one\n\
+  \   \t  two\n\
+  \          three\n\
+  \        four\n\
+  \"
+
 testAllEq :: Text -> Property
 testAllEq x =
   let
@@ -624,6 +642,15 @@ assertAllEqTo t l =
     then pure ()
     else assertFailure (show (Layouts ls))
 
+assertDeltas :: Text -> Assertion
+assertDeltas t =
+  let
+    ls = textToLayouts t
+  in
+    if ((== Right ()) . checkLayouts $ ls)
+    then pure ()
+    else assertFailure (show (Layouts ls))
+
 test_layout :: TestTree
 test_layout = testGroup "layout"
   [
@@ -648,10 +675,12 @@ test_layout = testGroup "layout"
   , testCase "E9"  $ assertAllEq exampleE9
   , testCase "E10"  $ assertAllEq exampleE10
   , testCase "E11"  $ assertAllEq exampleE11
-  -- , testProperty "all eq (no do, no errors)" $ testAllEq . modelLinesToText
-  -- , testProperty "deltas (no do, no errors)" $ testDeltas . modelLinesToText
-  -- , testProperty "all eq (with do, no errors)" $ testAllEq . modelLinesWithDoToText
-  -- , testProperty "deltas (with do, no errors)" $ testDeltas . modelLinesWithDoToText
+  , testCase "E12"  $ assertDeltas exampleE12
+  , testCase "E13"  $ assertAllEq exampleE13
+  , testProperty "all eq (no do, no errors)" $ testAllEq . modelLinesToText
+  , testProperty "deltas (no do, no errors)" $ testDeltas . modelLinesToText
+  , testProperty "all eq (with do, no errors)" $ testAllEq . modelLinesWithDoToText
+  , testProperty "deltas (with do, no errors)" $ testDeltas . modelLinesWithDoToText
   , testProperty "all eq (no do, with errors)" $ testAllEqNoVV . modelLinesWithErrorsToText
   -- , testProperty "deltas (no do, with errors)" $ testDeltas . modelLinesWithErrorsToText
   -- , testProperty "all eq (with do, with errors)" $ testAllEqNoVV . modelLinesWithDoAndErrorsToText
