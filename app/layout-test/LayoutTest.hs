@@ -288,7 +288,7 @@ instance Show ModelLines where
 
 instance Arbitrary ModelLines where
   arbitrary = do
-    n <- choose (0, 5)
+    n <- choose (0, 10)
     xs <- replicateM n arbitrary
     pure $ ModelLines xs
   shrink (ModelLines xs) =
@@ -429,180 +429,6 @@ instance Arbitrary ModelLinesWithDoAndErrors where
   shrink (ModelLinesWithDoAndErrors mlwd) =
     ModelLinesWithDoAndErrors <$> filter hasTabWd (shrink mlwd)
 
-exampleF1 :: Text
-exampleF1 =
-  "do\n\
-  \  foo\n\
-  \    bar\n\
-  \"
-
-exampleF2 :: Text
-exampleF2 =
-  "foo\n\
-  \  bar\n\
-  \baz\n\
-  \"
-
-exampleF3 :: Text
-exampleF3 =
-  "do\n\
-  \  foo\n\
-  \    bar\n\
-  \  two\n\
-  \"
-
-exampleF4 :: Text
-exampleF4 =
-  "foo\n\
-  \  bar\n\
-  \    baz\n\
-  \two\n\
-  \"
-
-exampleF5 :: Text
-exampleF5 =
-  "do\n\
-  \  three\n\
-  \  foo\n\
-  \bar\n\
-  \"
-
-exampleF6 :: Text
-exampleF6 =
-  "  one\n\
-  \two\n\
-  \  three\n\
-  \"
-
-exampleF7 :: Text
-exampleF7 =
-  "one\n\
-  \  two\n\
-  \  three\n\
-  \"
-
-exampleF8 :: Text
-exampleF8 =
-  "    one\n\
-  \  two\n\
-  \    three\n\
-  \four\n\
-  \"
-
-exampleF9 :: Text
-exampleF9 =
-  "      one\n\
-  \    two\n\
-  \  three\n\
-  \four\n\
-  \"
-
-exampleF10 :: Text
-exampleF10 =
-  "  one\n\
-  \do\n\
-  \  two\n\
-  \  three\n\
-  \"
-
--- this is the case that requires the trailing prefixes
-exampleE1 :: Text
-exampleE1 =
-  "foo\n\
-  \\t\tbar\n\
-  \  \tbaz\n\
-  \"
-
-exampleE2 :: Text
-exampleE2 =
-  "foo\n\
-  \bar\n\
-  \  baz\n\
-  \\t  two\n\
-  \"
-
-exampleE3 :: Text
-exampleE3 =
-  "foo\n\
-  \   bar\n\
-  \ \t baz\n\
-  \two\n\
-  \"
-
-exampleE4 :: Text
-exampleE4 =
-  "\t   one\n\
-  \  two\n\
-  \    three\n\
-  \"
-
-exampleE5 :: Text
-exampleE5 =
-  "    one\n\
-  \\t two\n\
-  \    three\n\
-  \"
-
-exampleE6 :: Text
-exampleE6 =
-  "    one\n\
-  \  two\n\
-  \\t   three\n\
-  \"
-
-exampleE7 :: Text
-exampleE7 =
-  "\t     one\n\
-  \    two\n\
-  \  three\n\
-  \"
-
-exampleE8 :: Text
-exampleE8 =
-  "      one\n\
-  \\t   two\n\
-  \  three\n\
-  \"
-
-exampleE9 :: Text
-exampleE9 =
-  "      one\n\
-  \    two\n\
-  \\t three\n\
-  \"
-
-exampleE10 :: Text
-exampleE10 =
-  "\tone\n\
-  \  two\n\
-  \    three\n\
-  \  four\n\
-  \"
-
-exampleE11 :: Text
-exampleE11 =
-  "       one\n\
-  \   \ttwo\n\
-  \       three\n\
-  \    four\n\
-  \"
-
-exampleE12 :: Text
-exampleE12 =
-  "\t one\n\
-  \     two\n\
-  \     three\n\
-  \     four\n\
-  \"
-
-exampleE13 :: Text
-exampleE13 =
-  "  one\n\
-  \   \t  two\n\
-  \          three\n\
-  \        four\n\
-  \"
-
 testAllEq :: Text -> Property
 testAllEq x =
   let
@@ -654,35 +480,16 @@ assertDeltas t =
 test_layout :: TestTree
 test_layout = testGroup "layout"
   [
-  --   testCase "F1"  $ assertAllEq exampleF1
-  -- , testCase "F2"  $ assertAllEq exampleF2
-  -- , testCase "F3"  $ assertAllEq exampleF3
-  -- , testCase "F4"  $ assertAllEq exampleF4
-  -- , testCase "F5"  $ assertAllEq exampleF5
-  -- , testCase "F6"  $ assertAllEq exampleF6
-  -- , testCase "F7"  $ assertAllEq exampleF7
-  -- , testCase "F8"  $ assertAllEq exampleF8
-  -- , testCase "F9"  $ assertAllEq exampleF9
-  -- , testCase "F10" $ assertAllEq exampleF10
-  -- , testCase "E1"  $ assertAllEq exampleE1
-  -- , testCase "E2"  $ assertAllEq exampleE2
-  -- , testCase "E3"  $ assertAllEq exampleE3
-  -- , testCase "E4"  $ assertAllEq exampleE4
-  -- , testCase "E5"  $ assertAllEq exampleE5
-  -- , testCase "E6"  $ assertAllEq exampleE6
-  -- , testCase "E7"  $ assertAllEq exampleE7
-  -- , testCase "E8"  $ assertAllEq exampleE8
-  -- , testCase "E9"  $ assertAllEq exampleE9
-  -- , testCase "E10"  $ assertAllEq exampleE10
-  -- , testCase "E11"  $ assertAllEq exampleE11
-  -- , testCase "E12"  $ assertDeltas exampleE12
-  -- , testCase "E13"  $ assertAllEq exampleE13
     testProperty "all eq (no do, no errors)" $ testAllEq . modelLinesToText
   , testProperty "deltas (no do, no errors)" $ testDeltas . modelLinesToText
-  -- , testProperty "all eq (with do, no errors)" $ testAllEq . modelLinesWithDoToText
-  -- , testProperty "deltas (with do, no errors)" $ testDeltas . modelLinesWithDoToText
+  , testProperty "all eq (with do, no errors)" $ testAllEq . modelLinesWithDoToText
+  , testProperty "deltas (with do, no errors)" $ testDeltas . modelLinesWithDoToText
   -- , testProperty "all eq (no do, with errors)" $ testAllEqNoVV . modelLinesWithErrorsToText
   -- , testProperty "deltas (no do, with errors)" $ testDeltas . modelLinesWithErrorsToText
   -- , testProperty "all eq (with do, with errors)" $ testAllEqNoVV . modelLinesWithDoAndErrorsToText
   -- , testProperty "deltas (with do, with errors)" $ testDeltas . modelLinesWithDoAndErrorsToText
   ]
+
+testMe :: Int -> IO ()
+testMe i = defaultMain . localOption (QuickCheckReplay (Just 123456)) . localOption (QuickCheckTests i) $ test_layout
+
