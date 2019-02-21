@@ -678,8 +678,8 @@ test_layout = testGroup "layout"
   -- , testCase "E12"  $ assertDeltas exampleE12
   -- , testCase "E13"  $ assertAllEq exampleE13
     testProperty "all eq (no do, no errors)" $ testAllEq . modelLinesToText
-  -- , testProperty "deltas (no do, no errors)" $ testDeltas . modelLinesToText
-  , testProperty "all eq (with do, no errors)" $ testAllEq . modelLinesWithDoToText
+  , testProperty "deltas (no do, no errors)" $ testDeltas . modelLinesToText
+  -- , testProperty "all eq (with do, no errors)" $ testAllEq . modelLinesWithDoToText
   -- , testProperty "deltas (with do, no errors)" $ testDeltas . modelLinesWithDoToText
   -- , testProperty "all eq (no do, with errors)" $ testAllEqNoVV . modelLinesWithErrorsToText
   -- , testProperty "deltas (no do, with errors)" $ testDeltas . modelLinesWithErrorsToText
