@@ -27,19 +27,14 @@ import Test.Tasty
 import Test.Tasty.HUnit
 import Test.Tasty.QuickCheck
 
-import Syntax.Prefix
 import Syntax.Token
 import Syntax.Dyck
 import Syntax.Rope
-import Relative.Class
 import Relative.Cat hiding (null)
-import qualified Relative.Cat as Cat
 import Relative.Delta
 import Rev
 import qualified Syntax.Lexer as Lex
 import Syntax.Layout
-
-import Debug.Trace
 
 linesToLayouts :: Delta -> [Text] -> (Delta, [Layout])
 linesToLayouts d0 ts =
@@ -383,12 +378,14 @@ instance Arbitrary ModelLinesWithDo where
   shrink (MLWDTwo m1 m2) =
     if hasDo m1 then [m1] else [] ++
     if hasDo m2 then [m2] else [] ++
-    if hasDo m1 || hasDo m2 then [MLWDTwo n1 n2 | (n1, n2) <- shrink (m1, m2)] else []
+    -- if hasDo m1 || hasDo m2 then [MLWDTwo n1 n2 | (n1, n2) <- shrink (m1, m2)] else []
+    [MLWDTwo n1 n2 | (n1, n2) <- shrink (m1, m2)]
   shrink (MLWDThree m1 m2 m3) =
     if hasDo m1 then [m1] else [] ++
     if hasDo m2 then [m2] else [] ++
     if hasDo m3 then [m3] else [] ++
-    if hasDo m1 || hasDo m2 || hasDo m3 then [MLWDThree n1 n2 n3 | (n1, n2, n3) <- shrink (m1, m2, m3)] else []
+    [MLWDThree n1 n2 n3 | (n1, n2, n3) <- shrink (m1, m2, m3)]
+    -- if hasDo m1 || hasDo m2 || hasDo m3 then [MLWDThree n1 n2 n3 | (n1, n2, n3) <- shrink (m1, m2, m3)] else []
 
 newtype ModelLinesWithDoAndErrors = ModelLinesWithDoAndErrors ModelLinesWithDo
   deriving (Eq, Ord)
