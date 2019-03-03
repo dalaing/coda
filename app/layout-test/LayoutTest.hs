@@ -477,13 +477,14 @@ assertDeltas t =
 test_layout :: TestTree
 test_layout = testGroup "layout"
   [
-    testProperty "all eq (no do, no errors)" $ testAllEq . modelLinesToText
-  , testProperty "deltas (no do, no errors)" $ testDeltas . modelLinesToText
-  , testProperty "all eq (with do, no errors)" $ testAllEq . modelLinesWithDoToText
-  , testProperty "deltas (with do, no errors)" $ testDeltas . modelLinesWithDoToText
-  , testProperty "all eq (no do, with errors)" $ testAllEqNoVV . modelLinesWithErrorsToText
+  --   testProperty "all eq (no do, no errors)" $ testAllEq . modelLinesToText
+  -- , testProperty "deltas (no do, no errors)" $ testDeltas . modelLinesToText
+  -- , testProperty "all eq (with do, no errors)" $ testAllEq . modelLinesWithDoToText
+  -- , testProperty "deltas (with do, no errors)" $ testDeltas . modelLinesWithDoToText
+   testProperty "all eq (no do, with errors, no VV)" $ testAllEqNoVV . modelLinesWithErrorsToText
+ , testProperty "all eq (no do, with errors)" $ testAllEq . modelLinesWithErrorsToText
   -- , testProperty "deltas (no do, with errors)" $ testDeltas . modelLinesWithErrorsToText
-  -- , testProperty "all eq (with do, with errors)" $ testAllEqNoVV . modelLinesWithDoAndErrorsToText
+  -- , testProperty "all eq (with do, with errors)" $ testAllEq . modelLinesWithDoAndErrorsToText
   -- , testProperty "deltas (with do, with errors)" $ testDeltas . modelLinesWithDoAndErrorsToText
   ]
 
