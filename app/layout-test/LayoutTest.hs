@@ -1,10 +1,3 @@
-{-|
-Copyright   : (c) 2018, Commonwealth Scientific and Industrial Research Organisation
-License     : BSD3
-Maintainer  : dave.laing.80@gmail.com
-Stability   : experimental
-Portability : non-portable
--}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TemplateHaskell #-}
@@ -69,29 +62,6 @@ textToLayouts t =
         f1 <> f2
   in
     fmap f [0..length ts - 1]
-
--- textToLayoutsNoVV :: Text -> [Layout]
--- textToLayoutsNoVV t =
---   let
---     ts' = Text.lines t
---     ts = case ts' of
---       [] -> []
---       _ -> fmap (<> "\n") (init ts') ++ [last ts']
---     f :: Int -> [Layout]
---     f i = (\(x, y) -> g x y) $ splitAt i ts
---     g :: [Text] -> [Text] -> [Layout]
---     g x y =
---       let
---         (d, ls1) = linesToLayouts 0 x
---         (_, ls2) = linesToLayouts d y
---         f1 = fold ls1
---         f2 = fold ls2
---       in
---         case (f1, f2) of
---           (V _ _ _ _, V _ _ _ _) -> []
---           _ -> pure $ f1 <> f2
---   in
---     foldMap f [0..length ts - 1]
 
 allEq :: Eq a => [a] -> Bool
 allEq xs =
@@ -242,13 +212,6 @@ catTokenDeltas cs = case preview _Cons cs of
   Nothing -> []
   Just (t, ts) -> tokenDeltas t ++ catTokenDeltas ts
 
--- The property to target is
---   allEq . textToLayouts $ txt
---
--- The text would come from one of two models
--- - one with no mismatched indents
--- - one with at least one mismatched indents
-
 newtype Indent = Indent { unIndent :: Int }
   deriving (Eq, Ord, Show)
 
@@ -377,14 +340,12 @@ instance Arbitrary ModelLinesWithDo where
   shrink (MLWDTwo m1 m2) =
     if hasDo m1 then [m1] else [] ++
     if hasDo m2 then [m2] else [] ++
-    -- if hasDo m1 || hasDo m2 then [MLWDTwo n1 n2 | (n1, n2) <- shrink (m1, m2)] else []
     [MLWDTwo n1 n2 | (n1, n2) <- shrink (m1, m2)]
   shrink (MLWDThree m1 m2 m3) =
     if hasDo m1 then [m1] else [] ++
     if hasDo m2 then [m2] else [] ++
     if hasDo m3 then [m3] else [] ++
     [MLWDThree n1 n2 n3 | (n1, n2, n3) <- shrink (m1, m2, m3)]
-    -- if hasDo m1 || hasDo m2 || hasDo m3 then [MLWDThree n1 n2 n3 | (n1, n2, n3) <- shrink (m1, m2, m3)] else []
 
 newtype ModelLinesWithDoAndErrors = ModelLinesWithDoAndErrors ModelLinesWithDo
   deriving (Eq, Ord)
@@ -451,13 +412,6 @@ testAllEq x =
   in
     counterexample (show (Layouts ls)) (collect (length . Text.lines $ x) . (=== True) . allEq $ ls)
 
--- testAllEqNoVV :: Text -> Property
--- testAllEqNoVV x =
---   let
---     ls = textToLayoutsNoVV x
---   in
---     counterexample (show (Layouts ls)) (collect (length . Text.lines $ x) . (=== True) . allEq $ ls)
-
 testDeltas :: Text -> Property
 testDeltas x =
   let
@@ -504,11 +458,8 @@ test_layout = testGroup "layout"
   , testProperty "all eq (no do, with errors)" $ testAllEq . modelLinesWithErrorsToText
   , testProperty "merging (no do, with errors)" $ checkTextMerging . modelLinesWithErrorsToText
   , testProperty "deltas (no do, with errors)" $ testDeltas . modelLinesWithErrorsToText
- -- , testProperty "all eq (with do, with errors)" $ testAllEq . modelLinesWithDoAndErrorsToText
- -- , testProperty "merging (with do, with errors)" $ checkTextMerging . modelLinesWithDoAndErrorsToText
-  -- , testProperty "deltas (with do, with errors)" $ testDeltas . modelLinesWithDoAndErrorsToText
+  , testProperty "all eq (with do, with errors)" $ testAllEq . modelLinesWithDoAndErrorsToText
+  , testProperty "merging (with do, with errors)" $ checkTextMerging . modelLinesWithDoAndErrorsToText
+  , testProperty "deltas (with do, with errors)" $ testDeltas . modelLinesWithDoAndErrorsToText
   ]
-
-testMe :: Int -> IO ()
-testMe i = defaultMain . localOption (QuickCheckReplay (Just 123456)) . localOption (QuickCheckTests i) $ test_layout
 
