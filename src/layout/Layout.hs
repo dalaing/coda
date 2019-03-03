@@ -127,7 +127,6 @@ shuffle d m l' m' r' =
   in
     (m'', l''', m''', Rev . revCat $ r''')
 
--- should we stop on errors, rather than adding the errors in?
 shuffle' :: Delta -> Run -> Cat Run -> Maybe Run -> Cat Run -> (Run, Cat Run, Maybe Run, Cat Run)
 shuffle' d m@(Run p _ ts _ pr) l'@(lh'@(Run p' _ _ Empty _) :< lt') m' r' =
   case joinAndCompare pr p' of
@@ -153,9 +152,6 @@ collapse :: Layout -> Layout
 collapse (V d Empty m Empty) = S d m
 collapse x = x
 
-postfix :: Run -> Prefix
-postfix (Run _ _ _ _ pr) = pr
-
 instance Semigroup Layout where
   E 0 <> xs = xs
   xs <> E 0 = xs
@@ -164,10 +160,10 @@ instance Semigroup Layout where
   E d <> V d' l m r = V (d <> d') (rel d l) (rel d m) (rel d r)
   S d m <> E d' = S (d <> d') m
   S d m@(Run p _ ts _ pr) <> S d' m'@(Run p' _ _ _ _) =
-    case (joinAndCompare p p', joinAndCompare pr p', boring ts) of
-      (Left _, Left _, _) ->
+    case (joinAndCompare p p', joinAndCompare pr p') of
+      (Left _, Left _) ->
         V (d <> d') Empty m (rel d . Rev . Cat.singleton . layoutError pr p' $ m')
-      (Left _, _, _) ->
+      (Left _, _) ->
         error "S1"
         -- V (d <> d') Empty m (rel d . Rev . Cat.singleton . layoutError pr p' $ m')
       -- -- TODO this should probably be examined some more
@@ -176,12 +172,12 @@ instance Semigroup Layout where
       -- -- TODO this should probably be examined some more
       -- (_, Left _, _) ->
         -- V (d <> d') Empty m (rel d . Rev . Cat.singleton . layoutError pr p' $ m')
-      (Right LT, _, _) ->
+      (Right LT, _) ->
         let (m_, _, m'_, _) = shuffle d m Empty (Just m') Empty
         in collapse $ V (d <> d') Empty m_ (rel d . Rev . maybe Empty Cat.singleton $ m'_)
-      (Right EQ, e, _) ->
+      (Right EQ, e) ->
         V (d <> d') Empty m (rel d . Rev . Cat.singleton . layout e pr p' $ m')
-      (Right GT, e, _) ->
+      (Right GT, e) ->
         V (d <> d') (Cat.singleton m) (rel d . layout e pr p' $ m') Empty
 
   S d m@(Run p _ _ _ pr) <> V d' Empty m'@(Run p' _ _ _ _) r' =
@@ -253,9 +249,9 @@ instance Semigroup Layout where
         in V (d <> d') l m ((rt :> rh_) <> (rel d . Rev . maybe Empty Cat.singleton $ m'_))
       (Right EQ, Right _) ->
         V (d <> d') l m (r :> (rel d m'))
-      (Right GT, Right _) | has _Empty l && hasMismatch (V d l m r) ->
-        let (rh_, _, m'_, _) = shuffle d rh Empty (Just m') Empty
-        in V (d <> d') l m ((rt :> rh_) <> (rel d . Rev . maybe Empty Cat.singleton $ m'_))
+      -- (Right GT, Right _) | has _Empty l && hasMismatch (V d l m r) ->
+      --   let (rh_, _, m'_, _) = shuffle d rh Empty (Just m') Empty
+      --   in V (d <> d') l m ((rt :> rh_) <> (rel d . Rev . maybe Empty Cat.singleton $ m'_))
       (Right GT, Right _) ->
         V (d <> d') (l <> Cat.singleton m <> revCat (runRev r)) (rel d m') Empty
 
