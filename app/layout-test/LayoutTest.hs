@@ -277,8 +277,18 @@ addTab (ModelLines ls) = do
     let ls' = ls & ix n . indent . ix m .~ '\t'
     pure $ ModelLines ls'
 
+addTabs :: ModelLines -> Gen ModelLines
+addTabs ml@(ModelLines ls) = do
+  x <- choose (1 :: Int, min 3 (length ls) `div` 3)
+  let
+    go 0 l = pure l
+    go n l = do
+      l' <- addTab l
+      go (pred n) l'
+  go x ml
+
 instance Arbitrary ModelLinesWithErrors where
-  arbitrary = arbitrary >>= fmap ModelLinesWithErrors . addTab
+  arbitrary = arbitrary >>= fmap ModelLinesWithErrors . addTabs
   shrink (ModelLinesWithErrors ml) =
     ModelLinesWithErrors <$> filter hasTab (shrink ml)
 
@@ -368,7 +378,7 @@ hasTabWd (MLWDThree m1 m2 m3) =
 
 addTabWd :: ModelLinesWithDo -> Gen ModelLinesWithDo
 addTabWd (MLWDLines ml) =
-  MLWDLines <$> addTab ml
+  MLWDLines <$> addTabs ml
 addTabWd (MLWDDo i mlwd) =
   MLWDDo i <$> addTabWd mlwd
 addTabWd (MLWDTwo m1 m2) =
