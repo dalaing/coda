@@ -30,6 +30,7 @@ import Test.Tasty.QuickCheck
 import Syntax.Token
 import Syntax.Dyck
 import Syntax.Rope
+import Syntax.Prefix
 import Relative.Cat hiding (null)
 import Relative.Delta
 import Rev
@@ -66,33 +67,31 @@ textToLayouts t =
         f2 = fold ls2
       in
         f1 <> f2
-        -- trace (Text.unpack . Text.unlines . showLayout $ f1) f1 <>
-        -- trace (Text.unpack . Text.unlines . showLayout $ f2) f2
   in
     fmap f [0..length ts - 1]
 
-textToLayoutsNoVV :: Text -> [Layout]
-textToLayoutsNoVV t =
-  let
-    ts' = Text.lines t
-    ts = case ts' of
-      [] -> []
-      _ -> fmap (<> "\n") (init ts') ++ [last ts']
-    f :: Int -> [Layout]
-    f i = (\(x, y) -> g x y) $ splitAt i ts
-    g :: [Text] -> [Text] -> [Layout]
-    g x y =
-      let
-        (d, ls1) = linesToLayouts 0 x
-        (_, ls2) = linesToLayouts d y
-        f1 = fold ls1
-        f2 = fold ls2
-      in
-        case (f1, f2) of
-          (V _ _ _ _, V _ _ _ _) -> []
-          _ -> pure $ f1 <> f2
-  in
-    foldMap f [0..length ts - 1]
+-- textToLayoutsNoVV :: Text -> [Layout]
+-- textToLayoutsNoVV t =
+--   let
+--     ts' = Text.lines t
+--     ts = case ts' of
+--       [] -> []
+--       _ -> fmap (<> "\n") (init ts') ++ [last ts']
+--     f :: Int -> [Layout]
+--     f i = (\(x, y) -> g x y) $ splitAt i ts
+--     g :: [Text] -> [Text] -> [Layout]
+--     g x y =
+--       let
+--         (d, ls1) = linesToLayouts 0 x
+--         (_, ls2) = linesToLayouts d y
+--         f1 = fold ls1
+--         f2 = fold ls2
+--       in
+--         case (f1, f2) of
+--           (V _ _ _ _, V _ _ _ _) -> []
+--           _ -> pure $ f1 <> f2
+--   in
+--     foldMap f [0..length ts - 1]
 
 allEq :: Eq a => [a] -> Bool
 allEq xs =
@@ -426,6 +425,25 @@ instance Arbitrary ModelLinesWithDoAndErrors where
   shrink (ModelLinesWithDoAndErrors mlwd) =
     ModelLinesWithDoAndErrors <$> filter hasTabWd (shrink mlwd)
 
+checkTextMerging :: Text -> Property
+checkTextMerging x =
+  let
+    ls = textToLayouts x
+  in
+    case ls of
+      (l@(V _ _ (Run p _ ts _ pr) (Rev r)) : _) ->
+        if boring ts
+        then
+          case preview _Cons (revCat r) of
+          Just (Run p' _ _ _ _, _) ->
+            case (joinAndCompare p p', joinAndCompare pr p') of
+              (Right LT, Right _) -> counterexample (show (Layouts (pure l))) (True === False)
+              _ -> True === True
+          Nothing -> True === True
+        else
+          True === True
+      _ -> True === True
+
 testAllEq :: Text -> Property
 testAllEq x =
   let
@@ -433,12 +451,12 @@ testAllEq x =
   in
     counterexample (show (Layouts ls)) (collect (length . Text.lines $ x) . (=== True) . allEq $ ls)
 
-testAllEqNoVV :: Text -> Property
-testAllEqNoVV x =
-  let
-    ls = textToLayoutsNoVV x
-  in
-    counterexample (show (Layouts ls)) (collect (length . Text.lines $ x) . (=== True) . allEq $ ls)
+-- testAllEqNoVV :: Text -> Property
+-- testAllEqNoVV x =
+--   let
+--     ls = textToLayoutsNoVV x
+--   in
+--     counterexample (show (Layouts ls)) (collect (length . Text.lines $ x) . (=== True) . allEq $ ls)
 
 testDeltas :: Text -> Property
 testDeltas x =
@@ -477,14 +495,17 @@ assertDeltas t =
 test_layout :: TestTree
 test_layout = testGroup "layout"
   [
-  --   testProperty "all eq (no do, no errors)" $ testAllEq . modelLinesToText
-  -- , testProperty "deltas (no do, no errors)" $ testDeltas . modelLinesToText
-  -- , testProperty "all eq (with do, no errors)" $ testAllEq . modelLinesWithDoToText
-  -- , testProperty "deltas (with do, no errors)" $ testDeltas . modelLinesWithDoToText
-   testProperty "all eq (no do, with errors, no VV)" $ testAllEqNoVV . modelLinesWithErrorsToText
- , testProperty "all eq (no do, with errors)" $ testAllEq . modelLinesWithErrorsToText
-  -- , testProperty "deltas (no do, with errors)" $ testDeltas . modelLinesWithErrorsToText
-  -- , testProperty "all eq (with do, with errors)" $ testAllEq . modelLinesWithDoAndErrorsToText
+    testProperty "all eq (no do, no errors)" $ testAllEq . modelLinesToText
+  , testProperty "merging (no do, no errors)" $ checkTextMerging . modelLinesToText
+  , testProperty "deltas (no do, no errors)" $ testDeltas . modelLinesToText
+  , testProperty "all eq (with do, no errors)" $ testAllEq . modelLinesWithDoToText
+  , testProperty "merging (with do, no errors)" $ checkTextMerging . modelLinesWithDoToText
+  , testProperty "deltas (with do, no errors)" $ testDeltas . modelLinesWithDoToText
+  , testProperty "all eq (no do, with errors)" $ testAllEq . modelLinesWithErrorsToText
+  , testProperty "merging (no do, with errors)" $ checkTextMerging . modelLinesWithErrorsToText
+  , testProperty "deltas (no do, with errors)" $ testDeltas . modelLinesWithErrorsToText
+ -- , testProperty "all eq (with do, with errors)" $ testAllEq . modelLinesWithDoAndErrorsToText
+ -- , testProperty "merging (with do, with errors)" $ checkTextMerging . modelLinesWithDoAndErrorsToText
   -- , testProperty "deltas (with do, with errors)" $ testDeltas . modelLinesWithDoAndErrorsToText
   ]
 
