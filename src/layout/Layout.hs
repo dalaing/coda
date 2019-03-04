@@ -93,7 +93,7 @@ gatherMismatchPrefixes :: Cat LayoutMismatch -> [Prefix]
 gatherMismatchPrefixes Empty = []
 gatherMismatchPrefixes (LayoutMismatch _ p1 p2 :< lms) = p1 : p2 : gatherMismatchPrefixes lms
 
--- possibly store prefix errors in ascending order in the Layout to speed this up
+-- TODO possibly store prefix errors in ascending order in the Layout to speed this up
 testMismatchPrefixes :: Prefix -> [Prefix] -> Bool
 testMismatchPrefixes p = all $ \tp ->
   case joinAndCompare p tp of
@@ -109,7 +109,8 @@ hasMismatch l =
 testMismatch :: Prefix -> Layout -> Bool
 testMismatch p l = testMismatchPrefixes p (gatherMismatchPrefixes . gatherMismatches $ l)
 
--- this should almost certainly be revAppendCat :: Relative a => Cat a -> Cat a -> Cat a
+-- TODO we should probably be using something like revAppendCat :: Relative a => Cat a -> Cat a -> Cat a
+-- in many of the places this is appearing
 revCat :: Relative a => Cat a -> Cat a
 revCat Empty = Empty
 revCat (x :< xs) = snocCat (revCat xs) x
