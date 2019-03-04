@@ -17,7 +17,6 @@ import Control.Monad.Except (MonadError, runExcept, throwError)
 import Control.Lens hiding (elements)
 
 import Test.Tasty
-import Test.Tasty.HUnit
 import Test.Tasty.QuickCheck
 
 import Syntax.Token
@@ -428,33 +427,6 @@ testDeltas x =
     ls = textToLayouts x
   in
     counterexample (show (Layouts ls)) ((=== Right ()) . checkLayouts $ ls)
-
-assertAllEq :: Text -> Assertion
-assertAllEq t =
-  let
-    ls = textToLayouts t
-  in
-    if allEq ls
-    then pure ()
-    else assertFailure (show (Layouts ls))
-
-assertAllEqTo :: Text -> Layout -> Assertion
-assertAllEqTo t l =
-  let
-    ls = l : textToLayouts t
-  in
-    if allEq ls
-    then pure ()
-    else assertFailure (show (Layouts ls))
-
-assertDeltas :: Text -> Assertion
-assertDeltas t =
-  let
-    ls = textToLayouts t
-  in
-    if ((== Right ()) . checkLayouts $ ls)
-    then pure ()
-    else assertFailure (show (Layouts ls))
 
 test_layout :: TestTree
 test_layout = testGroup "layout"
